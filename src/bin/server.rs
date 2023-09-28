@@ -1,5 +1,5 @@
-use ddmonitor;
+use ddmonitor::sdk;
 
 fn main() {
-    ddmonitor::hello("Hello, ddmontor server world!");
+    sdk::hello("from server")
 }

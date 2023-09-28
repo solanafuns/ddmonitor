@@ -1,7 +1,7 @@
-contract:
+sbf:
 	cargo build-sbf --manifest-path=./contract/Cargo.toml --sbf-out-dir=dist/contract
-
-deploy-remote: contract
+	
+deploy-remote: sbf
 	solana program deploy dist/contract/ddmonitor.so
 
 operator:
@@ -10,15 +10,15 @@ operator:
 server:
 	cargo build --release --bin server
 
-debug:
+debug: server operator
 	set -x 
 	solana-test-validator -r > /dev/null 2>&1 & 
 	pgrep solana-test-validator > validator.pid
 	echo "hello validator started !"
-	sleep 3 
+	sleep 10
 	kill `cat validator.pid` && rm validator.pid
 
-all: contract operator server 
+all: sbf operator server 
 
 clean: 
 	rm -rf dist

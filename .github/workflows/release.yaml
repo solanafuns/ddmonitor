@@ -14,8 +14,8 @@ jobs:
         include:
           - os: ubuntu-latest
             suffix: linux
-          - os: windows-latest
-            suffix: win
+          # - os: windows-latest
+          #   suffix: win
           - os: macOS-latest
             suffix: osx
 
@@ -36,5 +36,5 @@ jobs:
       with:
         name: target
         path: |
-          target/release/server-${{ matrix.suffix}} target/release/server-${{ matrix.suffix}}
-          target/release/operator-${{ matrix.suffix}} target/release/operator-${{ matrix.suffix}}
+          target/release/server-${{ matrix.suffix}}
+          target/release/operator-${{ matrix.suffix}} 

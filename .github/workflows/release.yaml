@@ -11,7 +11,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        include:
+          - os: ubuntu-latest
+            suffix: linux
+          - os: windows-latest
+            suffix: win
+          - os: macOS-latest
+            suffix: osx
 
     steps:
     - uses: hecrj/setup-rust-action@v2
@@ -20,3 +26,15 @@ jobs:
     - uses: actions/checkout@master
     - name: build binary
       run: cargo build --release
+    - name: rename binary file 
+      run: |
+        ls target/release/
+        mv target/release/server target/release/server-${{ matrix.suffix}}
+        mv target/release/server target/release/operator-${{ matrix.suffix}}
+    
+    - uses: actions/upload-artifact@v3
+      with:
+        name: target
+        path: |
+          target/release/server target/release/server-${{ matrix.suffix}}
+          target/release/server target/release/operator-${{ matrix.suffix}}

@@ -36,5 +36,5 @@ jobs:
       with:
         name: target
         path: |
-          target/server-${{ matrix.suffix}} target/release/server-${{ matrix.suffix}}
-          target/operator-${{ matrix.suffix}} target/release/operator-${{ matrix.suffix}}
+          target/release/server-${{ matrix.suffix}} target/release/server-${{ matrix.suffix}}
+          target/release/operator-${{ matrix.suffix}} target/release/operator-${{ matrix.suffix}}

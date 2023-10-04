@@ -1,0 +1,24 @@
+name: Build release binary
+
+on: 
+  push:
+    tags:
+      - release*
+  workflow_dispatch: 
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+
+    steps:
+    - uses: hecrj/setup-rust-action@v2
+      with:
+        rust-version: stable
+    - uses: actions/checkout@master
+    - name: Run tests
+      run: cargo test --verbose
+    - name: build binary
+      run: cargo build --release

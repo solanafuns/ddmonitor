@@ -38,3 +38,23 @@ jobs:
         path: |
           target/release/server-${{ matrix.suffix}}
           target/release/operator-${{ matrix.suffix}} 
+
+  upload-release:
+    permissions:
+      contents: write
+    needs:
+      - build-binary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: target
+          path: target
+          
+      - run: ls -al target && ls -R target/ && file target/
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: target/*

@@ -22,3 +22,4 @@ Cargo.lock
 test-ledger
 
 private
+.DS_Store

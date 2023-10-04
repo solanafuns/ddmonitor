@@ -30,11 +30,11 @@ jobs:
       run: |
         ls target/release/
         mv target/release/server target/release/server-${{ matrix.suffix}}
-        mv target/release/server target/release/operator-${{ matrix.suffix}}
+        mv target/release/operator target/release/operator-${{ matrix.suffix}}
     
     - uses: actions/upload-artifact@v3
       with:
         name: target
         path: |
-          target/release/server target/release/server-${{ matrix.suffix}}
-          target/release/server target/release/operator-${{ matrix.suffix}}
+          target/server-${{ matrix.suffix}} target/release/server-${{ matrix.suffix}}
+          target/operator-${{ matrix.suffix}} target/release/operator-${{ matrix.suffix}}

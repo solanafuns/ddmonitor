@@ -82,3 +82,25 @@ pub fn do_create_queue(
     }
     Ok(())
 }
+
+pub fn do_push_message(
+    accounts: &[AccountInfo],
+    seed_str: &str,
+    data: &str,
+    program_id: &Pubkey,
+) -> ProgramResult {
+    msg!(
+        "You will push one message to Queue account with name : {}",
+        seed_str
+    );
+    Ok(())
+}
+
+pub fn do_add_user_pub(
+    accounts: &[AccountInfo],
+    seed_str: &str,
+    user_pub: &str,
+    program_id: &Pubkey,
+) -> ProgramResult {
+    Ok(())
+}

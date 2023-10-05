@@ -2,6 +2,7 @@ use {
     crate::{models::ServerPrivate, runtime},
     borsh::{self, BorshDeserialize, BorshSerialize},
     solana_client::rpc_client::RpcClient,
+    solana_program::pubkey::Pubkey,
     solana_sdk::{commitment_config::CommitmentConfig, signer::keypair::Keypair},
 };
 
@@ -41,4 +42,15 @@ pub fn init_solana_wallet() -> std::io::Result<Keypair> {
 
 pub fn get_rpc_client() -> RpcClient {
     RpcClient::new_with_commitment(runtime::RPC_URL.to_string(), CommitmentConfig::finalized())
+}
+
+pub fn pda_queue_account(name: &str) -> Pubkey {
+    let program_account = runtime::program_account();
+    println!(
+        "program_account is : {} , name is : {}",
+        program_account.to_string(),
+        name
+    );
+    let (pda, _nonce) = Pubkey::find_program_address(&[name.as_bytes()], &program_account);
+    pda
 }

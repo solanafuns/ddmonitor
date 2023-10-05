@@ -10,13 +10,16 @@ operator:
 server:
 	cargo build --release --bin server
 
-debug: server operator
+debug: 
 	set -x 
-	solana-test-validator -r > /dev/null 2>&1 & 
-	pgrep solana-test-validator > validator.pid
+	# solana-test-validator -r > /dev/null 2>&1 & 
+	# pgrep solana-test-validator > validator.pid
 	echo "hello validator started !"
-	sleep 10
-	kill `cat validator.pid` && rm validator.pid
+	make deploy-remote
+	sleep 3
+	solana transfer G71McRtWpjKTmUEKMXV2NRzYE7ZchyGqetvLRrGxFxFW 5  --allow-unfunded-recipient
+	cargo run --bin server
+	# kill `cat validator.pid` && rm validator.pid
 
 all: sbf operator server 
 

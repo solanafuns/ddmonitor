@@ -1,6 +1,9 @@
-use std::{env, fs, path};
+use {
+    solana_program::pubkey::Pubkey,
+    std::{env, fs, path, str::FromStr},
+};
 
-pub const PROGRAME_ID: &str = "9pW59BsNCqtQC1xucwTXYS4Qe9qz5AgSy2jajE63odQb";
+pub const PROGRAME_ID: &str = "3nnaHheoCaB5KXMhfeCfNG4EDdjtPJHw9YsW4hyn9AFh";
 pub const RPC_URL: &str = "http://127.0.0.1:8899";
 pub const WS_URL: &str = "ws://127.0.0.1:8900";
 pub const LAMPORTS_PER_SOL: u64 = u64::pow(10, 9);
@@ -29,7 +32,7 @@ pub fn confirm_dir() {
 pub fn confirm_app_dir(sub: &str) {
     let check_path = app_path(sub);
     let path = path::Path::new(&check_path);
-    println!("check path : {}", path.display());
+    println!("check path : [ {} ] is dir...", path.display());
     if !path.exists() {
         fs::create_dir_all(path).unwrap();
     }
@@ -39,4 +42,8 @@ pub fn app_path(sub: &str) -> String {
     let app_dir = get_base_dir();
     let path = path::Path::new(&app_dir);
     path.join(sub).to_str().unwrap().to_string()
+}
+
+pub fn program_account() -> Pubkey {
+    Pubkey::from_str(PROGRAME_ID).unwrap()
 }

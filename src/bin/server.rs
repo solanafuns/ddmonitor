@@ -79,6 +79,8 @@ async fn main() -> std::io::Result<()> {
     match connection.send_and_confirm_transaction(&transaction) {
         Ok(tx) => {
             println!("create queue account tx : {:?}", tx);
+            let callback = |b64data: String| println!("account update : {}", b64data);
+            sdk::get_account_updates(&queue_account, callback).unwrap();
         }
         Err(err) => {
             let _transaction_err = err.get_transaction_error().unwrap();

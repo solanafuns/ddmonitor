@@ -1,7 +1,6 @@
 use {
-    borsh::BorshDeserialize,
     clap::Parser,
-    ddmonitor::{models, runtime, sdk},
+    ddmonitor::{handlers, models, runtime, sdk},
     solana_program::{instruction::AccountMeta, system_program},
     solana_sdk::{instruction::Instruction, signer::Signer, transaction::Transaction},
     std::{thread, time},
@@ -83,19 +82,12 @@ async fn main() -> std::io::Result<()> {
     match connection.send_and_confirm_transaction(&transaction) {
         Ok(tx) => {
             println!("create queue account tx : {:?}", tx);
-            let callback = |b64data: String| {
-                let buf = sdk::base64_decode(&b64data);
-                if !buf.is_err() {
-                    let data = buf.unwrap();
-                    println!("data len : {} ", data.len());
-                    let queue = models::Queue::try_from_slice(&data);
-                    if !queue.is_err() {
-                        let queue = queue.unwrap();
-                        println!("queue data : {:?}", queue.data);
-                    }
-                }
-            };
-            sdk::get_account_updates(&queue_account, callback).unwrap();
+            if args.allow != "default" {
+                println!("no allow account , exit...");
+                return Ok(());
+            }
+
+            sdk::get_account_updates(&queue_account, handlers::main).unwrap();
         }
         Err(err) => {
             let _transaction_err = err.get_transaction_error().unwrap();

@@ -24,4 +24,13 @@ impl Queue {
         }
         false
     }
+
+    pub fn add_push_pub(&mut self, user: &Pubkey) {
+        for i in 0..self.allow.len() {
+            if self.allow[i] == Pubkey::default() {
+                self.allow[i] = user.clone();
+                break;
+            }
+        }
+    }
 }

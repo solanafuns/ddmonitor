@@ -1,5 +1,10 @@
 use {
     crate::{models::ServerPrivate, runtime},
+    base64::{
+        alphabet,
+        engine::{self, general_purpose},
+        Engine as _,
+    },
     borsh::{self, BorshDeserialize, BorshSerialize},
     solana_account_decoder::{UiAccountData, UiAccountEncoding},
     solana_client::{pubsub_client::PubsubClient, rpc_client::RpcClient},
@@ -79,12 +84,10 @@ pub fn get_account_updates(account_pubkey: &Pubkey, callback: fn(String)) -> Res
     loop {
         match account_subscription_receiver.recv() {
             Ok(response) => {
+                println!("account subscription received");
                 let ui_account = response.value;
-                println!("account subscription response: {:?}", ui_account);
-                println!("account data is : {:?}", ui_account.data);
                 match ui_account.data {
-                    UiAccountData::Binary(b64_str, encoding) => {
-                        println!("account encoding is : {:?}", encoding);
+                    UiAccountData::Binary(b64_str, _encoding) => {
                         callback(b64_str);
                     }
                     _ => {}
@@ -97,4 +100,20 @@ pub fn get_account_updates(account_pubkey: &Pubkey, callback: fn(String)) -> Res
         }
     }
     Ok(())
+}
+
+pub fn base64_decode(data_b64: &str) -> Result<Vec<u8>> {
+    let engine = engine::GeneralPurpose::new(&alphabet::STANDARD, general_purpose::PAD);
+    match engine.decode(data_b64) {
+        Ok(data) => Ok(data),
+        Err(e) => Err(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            format!("base64 decode error : {:?}", e),
+        )),
+    }
+}
+
+pub fn base64_encode(data: &[u8]) -> String {
+    let engine = engine::GeneralPurpose::new(&alphabet::STANDARD, general_purpose::PAD);
+    engine.encode(data)
 }

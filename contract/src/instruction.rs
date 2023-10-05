@@ -9,5 +9,10 @@ pub enum InstructionData {
     },
     PushMessage {
         name: String,
+        data: String,
+    },
+    AddUserPub {
+        name: String,
+        user_pub: String,
     },
 }

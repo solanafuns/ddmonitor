@@ -3,7 +3,7 @@ use {
     std::{env, fs, path, str::FromStr},
 };
 
-pub const PROGRAME_ID: &str = "3nnaHheoCaB5KXMhfeCfNG4EDdjtPJHw9YsW4hyn9AFh";
+pub const PROGRAME_ID: &str = "HZRahcg3oLXw4GScUN7bzCfHWx33G6SBrg6G1vVL1qEm";
 pub const RPC_URL: &str = "http://127.0.0.1:8899";
 pub const WS_URL: &str = "ws://127.0.0.1:8900";
 pub const AIRDROP: bool = true;

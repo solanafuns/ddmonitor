@@ -1,4 +1,5 @@
 use {
+    borsh::BorshDeserialize,
     clap::Parser,
     ddmonitor::{models, runtime, sdk},
     solana_program::{instruction::AccountMeta, system_program},
@@ -12,6 +13,9 @@ struct Args {
     /// Name of the queue
     #[arg(short, long, default_value_t = String::from("default"))]
     name: String,
+
+    #[arg(short, long, default_value_t = String::from("default"))]
+    allow: String,
 }
 
 #[tokio::main]
@@ -40,7 +44,7 @@ async fn main() -> std::io::Result<()> {
     }
 
     println!("now sol is ready , create one account for ddmonitor... ");
-    const DATA_SIZE: usize = 1024;
+    const DATA_SIZE: usize = 256;
     const ALLOW_COUNT: u8 = 10;
     let queue_name = args.name;
     let queue_account = sdk::pda_queue_account(&queue_name);
@@ -79,7 +83,18 @@ async fn main() -> std::io::Result<()> {
     match connection.send_and_confirm_transaction(&transaction) {
         Ok(tx) => {
             println!("create queue account tx : {:?}", tx);
-            let callback = |b64data: String| println!("account update : {}", b64data);
+            let callback = |b64data: String| {
+                let buf = sdk::base64_decode(&b64data);
+                if !buf.is_err() {
+                    let data = buf.unwrap();
+                    println!("data len : {} ", data.len());
+                    let queue = models::Queue::try_from_slice(&data);
+                    if !queue.is_err() {
+                        let queue = queue.unwrap();
+                        println!("queue data : {:?}", queue.data);
+                    }
+                }
+            };
             sdk::get_account_updates(&queue_account, callback).unwrap();
         }
         Err(err) => {

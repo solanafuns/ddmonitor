@@ -1,17 +1,29 @@
 use {
+    clap::Parser,
     ddmonitor::{models, runtime, sdk},
     solana_program::{instruction::AccountMeta, system_program},
     solana_sdk::{instruction::Instruction, signer::Signer, transaction::Transaction},
     std::{thread, time},
 };
 
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    /// Name of the queue
+    #[arg(short, long, default_value_t = String::from("default"))]
+    name: String,
+}
+
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
+    let args = Args::parse();
     runtime::init_app();
     let pair = sdk::init_solana_wallet().unwrap();
     let pub_key = pair.pubkey();
-    println!("server pub_key address : {:?}", pair.pubkey());
-    println!("check and wait balance...");
+    println!(
+        "server pub_key address : {:?} , check and wait balance...",
+        pair.pubkey()
+    );
     let connection = sdk::get_rpc_client();
     loop {
         let balance = connection.get_balance(&pub_key).unwrap();
@@ -19,6 +31,9 @@ async fn main() -> std::io::Result<()> {
         if balance >= runtime::LAMPORTS_PER_SOL {
             break;
         } else {
+            if runtime::AIRDROP {
+                let _ = connection.request_airdrop(&pub_key, runtime::LAMPORTS_PER_SOL * 5);
+            }
             let delay = time::Duration::from_secs(3);
             thread::sleep(delay);
         }
@@ -27,9 +42,8 @@ async fn main() -> std::io::Result<()> {
     println!("now sol is ready , create one account for ddmonitor... ");
     const DATA_SIZE: usize = 1024;
     const ALLOW_COUNT: u8 = 10;
-    const QUEUE_NAME: &str = "hello";
-
-    let queue_account = sdk::pda_queue_account(QUEUE_NAME);
+    let queue_name = args.name;
+    let queue_account = sdk::pda_queue_account(&queue_name);
     println!("queue account is : {:?}", queue_account);
     let queue_size = models::Queue::queue_size(DATA_SIZE, ALLOW_COUNT);
     let lamports = connection
@@ -50,7 +64,7 @@ async fn main() -> std::io::Result<()> {
     let instruction = Instruction::new_with_borsh(
         runtime::program_account(),
         &models::InstructionData::RegisterQueue {
-            name: QUEUE_NAME.to_string(),
+            name: queue_name.to_string(),
             data_size: DATA_SIZE,
             allow_count: ALLOW_COUNT,
         },

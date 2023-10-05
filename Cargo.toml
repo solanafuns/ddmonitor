@@ -16,3 +16,5 @@ thiserror = "1.0.48"
 tokio = { version = "1", features = ["full"] }
 solana-rpc-client-api = "1.16.14"
 solana-account-decoder = "1.16.14"
+clap = { version = "4.4.6", features = ["derive"] }
+

@@ -7,6 +7,28 @@ on:
   workflow_dispatch:
 
 jobs:
+
+  build-sbf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: hecrj/setup-rust-action@v2
+        with:
+          rust-version: stable
+      - uses: actions/checkout@master
+      - name: install solana
+        run: sh -c "$(curl -sSfL https://release.solana.com/v1.17.0/install)"
+      - name: Add to PATH
+        shell: bash
+        run: |
+          echo "/home/runner/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+      - name: build sbf
+        run: cargo build-sbf --manifest-path=./contract/Cargo.toml --sbf-out-dir=dist/contract
+      - uses: actions/upload-artifact@v3
+        with:
+          name: target
+          path: |
+            dist/contract/ddmonitor.so
+
   build-binary:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -44,6 +66,8 @@ jobs:
       contents: write
     needs:
       - build-binary
+      - build-sbf
+      
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

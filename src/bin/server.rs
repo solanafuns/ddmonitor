@@ -18,6 +18,10 @@ struct Args {
     /// Network to communicate with
     #[arg(short, long, default_value_t = String::from("local"))]
     network: String,
+
+    /// Solana program address
+    #[arg(short, long, default_value_t = String::from("HZRahcg3oLXw4GScUN7bzCfHWx33G6SBrg6G1vVL1qEm"))]
+    program: String,
 }
 
 #[tokio::main]

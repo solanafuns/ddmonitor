@@ -1,5 +1,5 @@
 use {
-    crate::{models::ServerPrivate, runtime},
+    crate::{runtime, runtime::ServerPrivate},
     base64::{
         alphabet,
         engine::{self, general_purpose},

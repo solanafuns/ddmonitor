@@ -1,7 +1,4 @@
-use {
-    crate::{models, sdk},
-    borsh::BorshDeserialize,
-};
+use {crate::sdk, borsh::BorshDeserialize, contract::models};
 
 pub fn main(b64data: String) {
     let buf = sdk::base64_decode(&b64data);

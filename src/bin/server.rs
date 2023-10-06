@@ -1,6 +1,7 @@
 use {
     clap::Parser,
-    ddmonitor::{handlers, models, runtime, sdk},
+    contract::{instruction::InstructionData, models},
+    ddmonitor::{handlers, runtime, sdk},
     solana_program::{instruction::AccountMeta, system_program},
     solana_sdk::{instruction::Instruction, signer::Signer, transaction::Transaction},
 };
@@ -62,7 +63,7 @@ async fn main() -> std::io::Result<()> {
     // Create the instruction by serializing our instruction data via borsh
     let instruction = Instruction::new_with_borsh(
         runtime::program_account(),
-        &models::InstructionData::RegisterQueue {
+        &InstructionData::RegisterQueue {
             name: queue_name.to_string(),
             data_size: DATA_SIZE,
             allow_count: ALLOW_COUNT,

@@ -1,5 +1,5 @@
 use {
-    borsh::{BorshDeserialize, BorshSerialize},
+    borsh::{to_vec, BorshDeserialize, BorshSerialize},
     solana_program::{clock, pubkey::Pubkey, sysvar::Sysvar},
 };
 
@@ -49,5 +49,17 @@ impl Queue {
             let padding_amount = desired_length - current_length;
             self.data.extend(vec![padding_value; padding_amount]);
         }
+    }
+
+    pub fn queue_size(data_size: usize, allow_count: u8) -> usize {
+        let mut allow_list = Vec::new();
+        let mut mut_index = allow_count;
+        while mut_index > 0 {
+            allow_list.push(Pubkey::new_unique());
+            mut_index -= 1;
+        }
+        let tmp_queue = Self::new_queue(&Pubkey::new_unique(), &allow_list, data_size);
+        let q_data = to_vec(&tmp_queue).unwrap();
+        q_data.len()
     }
 }

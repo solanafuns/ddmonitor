@@ -1,6 +1,7 @@
 use {
     clap::Parser,
-    ddmonitor::{models, runtime, sdk},
+    contract::instruction::InstructionData,
+    ddmonitor::{runtime, sdk},
     solana_program::{instruction::AccountMeta, system_program},
     solana_sdk::{instruction::Instruction, signer::Signer, transaction::Transaction},
 };
@@ -54,7 +55,7 @@ async fn main() -> std::io::Result<()> {
 
     let instruction = Instruction::new_with_borsh(
         runtime::program_account(),
-        &models::InstructionData::PushMessage {
+        &InstructionData::PushMessage {
             name: args.name,
             data: args.message,
         },

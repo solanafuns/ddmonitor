@@ -7,7 +7,6 @@ on:
   workflow_dispatch:
 
 jobs:
-
   build-sbf:
     runs-on: ubuntu-latest
     steps:
@@ -27,7 +26,7 @@ jobs:
         with:
           name: target
           path: |
-            dist/contract/ddmonitor.so
+            dist/contract/contract.so
 
   build-binary:
     runs-on: ${{ matrix.os }}
@@ -67,7 +66,7 @@ jobs:
     needs:
       - build-binary
       - build-sbf
-      
+
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

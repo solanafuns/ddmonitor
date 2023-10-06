@@ -1,5 +1,6 @@
 use {
     chrono::{DateTime, Local},
+    serde::{Deserialize, Serialize},
     solana_program::pubkey::Pubkey,
     std::{env, fs, path, str::FromStr},
 };
@@ -51,4 +52,10 @@ pub fn program_account() -> Pubkey {
 pub fn current_timestamp() -> i64 {
     let local: DateTime<Local> = Local::now();
     local.timestamp_millis()
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ServerPrivate {
+    pub secret: String,
 }

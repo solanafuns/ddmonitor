@@ -3,6 +3,11 @@ name = "ddmonitor"
 version = "0.1.9"
 edition = "2021"
 
+[workspace]
+members = [
+    "contract"
+]
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
@@ -19,4 +24,5 @@ solana-account-decoder = "1.16.14"
 clap = { version = "4.4.6", features = ["derive"] }
 base64 = "0.21.4"
 chrono = "0.4.31"
+contract = { path = "./contract" }
 

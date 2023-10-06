@@ -1,12 +1,27 @@
 name: Build release binary
 
-on: 
+on:
   push:
     tags:
       - release*
-  workflow_dispatch: 
+  workflow_dispatch:
 
 jobs:
+  build-sbf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: hecrj/setup-rust-action@v2
+        with:
+          rust-version: stable
+      - uses: actions/checkout@master
+      - name: build sbf
+        run: cargo build-sbf --manifest-path=./contract/Cargo.toml --sbf-out-dir=dist/contract
+      - uses: actions/upload-artifact@v3
+        with:
+          name: target
+          path: |
+            dist/contract/ddmonitor.so
+
   build-binary:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -20,24 +35,24 @@ jobs:
             suffix: osx
 
     steps:
-    - uses: hecrj/setup-rust-action@v2
-      with:
-        rust-version: stable
-    - uses: actions/checkout@master
-    - name: build binary
-      run: cargo build --release
-    - name: rename binary file 
-      run: |
-        ls target/release/
-        mv target/release/server target/release/server-${{ matrix.suffix}}
-        mv target/release/operator target/release/operator-${{ matrix.suffix}}
-    
-    - uses: actions/upload-artifact@v3
-      with:
-        name: target
-        path: |
-          target/release/server-${{ matrix.suffix}}
-          target/release/operator-${{ matrix.suffix}} 
+      - uses: hecrj/setup-rust-action@v2
+        with:
+          rust-version: stable
+      - uses: actions/checkout@master
+      - name: build binary
+        run: cargo build --release
+      - name: rename binary file
+        run: |
+          ls target/release/
+          mv target/release/server target/release/server-${{ matrix.suffix}}
+          mv target/release/operator target/release/operator-${{ matrix.suffix}}
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: target
+          path: |
+            target/release/server-${{ matrix.suffix}}
+            target/release/operator-${{ matrix.suffix}}
 
   upload-release:
     permissions:
@@ -62,4 +77,3 @@ jobs:
             target/*
             LICENSE
             README.md
-            

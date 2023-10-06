@@ -5,9 +5,6 @@ use {
 };
 
 pub const PROGRAME_ID: &str = "HZRahcg3oLXw4GScUN7bzCfHWx33G6SBrg6G1vVL1qEm";
-pub const RPC_URL: &str = "http://127.0.0.1:8899";
-pub const WS_URL: &str = "ws://127.0.0.1:8900";
-pub const AIRDROP: bool = true;
 
 pub const LAMPORTS_PER_SOL: u64 = u64::pow(10, 9);
 

@@ -1,3 +1,5 @@
+use crate::runtime;
+
 use {
     borsh::{self, to_vec, BorshDeserialize, BorshSerialize},
     serde::{Deserialize, Serialize},
@@ -27,23 +29,13 @@ pub struct ServerPrivate {
     pub secret: String,
 }
 
-#[derive(Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct TransactionBlockResponseOptions {
-    show_input: bool,
-    show_raw_input: bool,
-    show_effects: bool,
-    show_events: bool,
-    show_object_changes: bool,
-    show_balance_changes: bool,
-}
-
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub struct Queue {
     pub creator: Pubkey,
     pub allow: Vec<Pubkey>,
     pub data: Vec<u8>,
     pub need_data_size: usize,
+    pub created_at: i64,
 }
 
 impl Queue {
@@ -54,6 +46,7 @@ impl Queue {
             allow: allow.clone(),
             data,
             need_data_size: data_size,
+            created_at: runtime::current_timestamp(),
         }
     }
 

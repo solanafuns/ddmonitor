@@ -14,20 +14,25 @@ struct Args {
 
     #[arg(short, long, default_value_t = String::from("default"))]
     allow: String,
+
+    /// Network to communicate with
+    #[arg(short, long, default_value_t = String::from("local"))]
+    network: String,
 }
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
     let args = Args::parse();
     runtime::init_app();
+    let network = sdk::Network::from_string(&args.network);
     let pair = sdk::init_solana_wallet().unwrap();
     let pub_key = pair.pubkey();
     println!(
         "server pub_key address : {:?} , check and wait balance...",
         pair.pubkey()
     );
-    let connection = sdk::get_rpc_client();
-    sdk::confirm_balance(&connection, &pub_key, 5);
+    let connection = sdk::get_rpc_client(&network);
+    sdk::confirm_balance(&connection, &network, &pub_key, 5);
 
     println!("now sol is ready , create one account for ddmonitor... ");
     const DATA_SIZE: usize = 64;
@@ -74,7 +79,7 @@ async fn main() -> std::io::Result<()> {
                 return Ok(());
             }
 
-            sdk::get_account_updates(&queue_account, handlers::main).unwrap();
+            sdk::get_account_updates(&network, &queue_account, handlers::main).unwrap();
         }
         Err(err) => {
             let _transaction_err = err.get_transaction_error().unwrap();

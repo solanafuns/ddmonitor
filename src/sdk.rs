@@ -41,8 +41,8 @@ pub fn init_solana_wallet() -> std::io::Result<Keypair> {
     }
 }
 
-pub fn get_rpc_client() -> RpcClient {
-    RpcClient::new_with_commitment(runtime::RPC_URL.to_string(), CommitmentConfig::finalized())
+pub fn get_rpc_client(network: &Network) -> RpcClient {
+    RpcClient::new_with_commitment(network.get_rpc_url(), CommitmentConfig::finalized())
 }
 
 pub fn pda_queue_account(name: &str) -> Pubkey {
@@ -56,10 +56,14 @@ pub fn pda_queue_account(name: &str) -> Pubkey {
     pda
 }
 
-pub fn get_account_updates(account_pubkey: &Pubkey, callback: fn(String)) -> Result<()> {
+pub fn get_account_updates(
+    network: &Network,
+    account_pubkey: &Pubkey,
+    callback: fn(String),
+) -> Result<()> {
     let (mut _account_subscription_client, account_subscription_receiver) =
         PubsubClient::account_subscribe(
-            runtime::WS_URL,
+            &network.get_ws_url(),
             account_pubkey,
             Some(RpcAccountInfoConfig {
                 encoding: Some(UiAccountEncoding::JsonParsed),
@@ -111,14 +115,19 @@ pub fn base64_encode(data: &[u8]) -> String {
     engine.encode(data)
 }
 
-pub fn confirm_balance(connection: &RpcClient, pub_key: &Pubkey, sol_count: u64) {
+pub fn confirm_balance(
+    connection: &RpcClient,
+    network: &Network,
+    pub_key: &Pubkey,
+    sol_count: u64,
+) {
     loop {
         let balance = connection.get_balance(&pub_key).unwrap();
         println!("current balance is : {}", balance);
         if balance >= runtime::LAMPORTS_PER_SOL * sol_count {
             break;
         } else {
-            if runtime::AIRDROP {
+            if network.airdrop_enable() {
                 let _ = connection.request_airdrop(&pub_key, runtime::LAMPORTS_PER_SOL * sol_count);
             }
             let delay = time::Duration::from_secs(3);
@@ -127,6 +136,48 @@ pub fn confirm_balance(connection: &RpcClient, pub_key: &Pubkey, sol_count: u64)
     }
 }
 
-pub fn print_transaction_logs(connection: &RpcClient, tx: &solana_sdk::transaction::Transaction) {
-    println!("transaction logs : {:?}", tx);
+pub enum Network {
+    Local,
+    Dev,
+    Test,
+    MainBeta,
+}
+
+impl Network {
+    pub fn from_string(network_name: &str) -> Self {
+        match network_name {
+            "local" => Self::Local,
+            "dev" => Self::Dev,
+            "test" => Self::Test,
+            "main-beta" => Self::MainBeta,
+            _ => Self::Local,
+        }
+    }
+
+    pub fn get_ws_url(&self) -> String {
+        match self {
+            Self::Local => "ws://127.0.0.1:8900".to_string(),
+            Self::Dev => "wss://api.devnet.solana.com/".to_string(),
+            Self::Test => "wss://api.testnet.solana.com/".to_string(),
+            Self::MainBeta => "wss://api.mainnet-beta.solana.com/".to_string(),
+        }
+    }
+
+    pub fn get_rpc_url(&self) -> String {
+        match self {
+            Self::Local => "http://127.0.0.1:8899".to_string(),
+            Self::Dev => "https://api.devnet.solana.com".to_string(),
+            Self::Test => "https://api.testnet.solana.com".to_string(),
+            Self::MainBeta => "https://api.mainnet-beta.solana.com".to_string(),
+        }
+    }
+
+    pub fn airdrop_enable(&self) -> bool {
+        match self {
+            Self::Local => true,
+            Self::Dev => true,
+            Self::Test => true,
+            Self::MainBeta => false,
+        }
+    }
 }

@@ -15,18 +15,23 @@ struct Args {
     /// Message to push
     #[arg(short, long, default_value_t = String::from("hello world"))]
     message: String,
+
+    /// Network to communicate with
+    #[arg(short, long, default_value_t = String::from("local"))]
+    network: String,
 }
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
     let args = Args::parse();
+    let network = sdk::Network::from_string(&args.network);
     runtime::init_app();
     let pair = sdk::init_solana_wallet()?;
     let pub_key = pair.pubkey();
     println!("current wallet address : {}", pub_key);
 
-    let connection = sdk::get_rpc_client();
-    sdk::confirm_balance(&connection, &pub_key, 5);
+    let connection = sdk::get_rpc_client(&network);
+    sdk::confirm_balance(&connection, &network, &pub_key, 5);
     let queue_name = args.name.clone();
     let queue_account = sdk::pda_queue_account(&queue_name);
 

@@ -45,9 +45,6 @@ pub fn process_instruction(
                 InstructionData::AddUserPub { name, user_pub } => {
                     return process::do_add_user_pub(accounts, &name, &user_pub, program_id);
                 }
-                _ => {
-                    msg!("not implemented");
-                }
             }
         }
         Err(err) => {

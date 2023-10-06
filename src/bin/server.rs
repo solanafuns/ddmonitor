@@ -3,7 +3,6 @@ use {
     ddmonitor::{handlers, models, runtime, sdk},
     solana_program::{instruction::AccountMeta, system_program},
     solana_sdk::{instruction::Instruction, signer::Signer, transaction::Transaction},
-    std::{thread, time},
 };
 
 #[derive(Parser, Debug)]
@@ -28,23 +27,11 @@ async fn main() -> std::io::Result<()> {
         pair.pubkey()
     );
     let connection = sdk::get_rpc_client();
-    loop {
-        let balance = connection.get_balance(&pub_key).unwrap();
-        println!("current balance is : {}", balance);
-        if balance >= runtime::LAMPORTS_PER_SOL {
-            break;
-        } else {
-            if runtime::AIRDROP {
-                let _ = connection.request_airdrop(&pub_key, runtime::LAMPORTS_PER_SOL * 5);
-            }
-            let delay = time::Duration::from_secs(3);
-            thread::sleep(delay);
-        }
-    }
+    sdk::confirm_balance(&connection, &pub_key, 5);
 
     println!("now sol is ready , create one account for ddmonitor... ");
-    const DATA_SIZE: usize = 256;
-    const ALLOW_COUNT: u8 = 10;
+    const DATA_SIZE: usize = 64;
+    const ALLOW_COUNT: u8 = 3;
     let queue_name = args.name;
     let queue_account = sdk::pda_queue_account(&queue_name);
     println!("queue account is : {:?}", queue_account);

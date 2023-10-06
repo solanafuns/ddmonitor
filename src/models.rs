@@ -43,6 +43,7 @@ pub struct Queue {
     pub creator: Pubkey,
     pub allow: Vec<Pubkey>,
     pub data: Vec<u8>,
+    pub need_data_size: usize,
 }
 
 impl Queue {
@@ -52,6 +53,7 @@ impl Queue {
             creator: creator.clone(),
             allow: allow.clone(),
             data,
+            need_data_size: data_size,
         }
     }
 

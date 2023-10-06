@@ -1,25 +1,68 @@
-use borsh::{to_vec, BorshDeserialize, BorshSerialize};
-use ddmonitor::sdk::hello;
-use ddmonitor::sdk::InstructionData;
+use {
+    clap::Parser,
+    ddmonitor::{models, runtime, sdk},
+    solana_program::{instruction::AccountMeta, system_program},
+    solana_sdk::{instruction::Instruction, signer::Signer, transaction::Transaction},
+};
 
-fn main() {
-    hello("Hello, ddmontor operator !");
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    /// Name of the queue
+    #[arg(short, long, default_value_t = String::from("default"))]
+    name: String,
 
-    // let d = InstructionData::RegisterQueue {
-    //     name: "hello world".to_string(),
-    // };
+    /// Message to push
+    #[arg(short, long, default_value_t = String::from("hello world"))]
+    message: String,
+}
 
-    let d = InstructionData::Empty(0);
+#[tokio::main]
+async fn main() -> std::io::Result<()> {
+    let args = Args::parse();
+    runtime::init_app();
+    let pair = sdk::init_solana_wallet()?;
+    let pub_key = pair.pubkey();
+    println!("current wallet address : {}", pub_key);
 
-    let x = to_vec(&d).unwrap();
-    print!("x: {:?}", x);
+    let connection = sdk::get_rpc_client();
+    sdk::confirm_balance(&connection, &pub_key, 5);
+    let queue_name = args.name.clone();
+    let queue_account = sdk::pda_queue_account(&queue_name);
 
-    const BUFFER_SIZE: usize = 128;
-    let mut buf = [0u8; BUFFER_SIZE];
-    println!("buffer : {:?}", buf);
-    d.serialize(&mut &mut buf[..]).unwrap();
-    println!("buffer : {:?}", buf);
+    println!(
+        "you will push message : {} to : {}, queue account : {}",
+        args.message,
+        args.name,
+        queue_account.to_string()
+    );
 
-    let x = InstructionData::try_from_slice(&buf).unwrap();
-    println!("x: {:?}", x);
+    let accounts = vec![
+        AccountMeta::new(pub_key.clone(), true),
+        AccountMeta::new(queue_account.clone(), false),
+        AccountMeta::new_readonly(system_program::ID, false),
+    ];
+
+    let instruction = Instruction::new_with_borsh(
+        runtime::program_account(),
+        &models::InstructionData::PushMessage {
+            name: args.name,
+            data: args.message,
+        },
+        accounts,
+    );
+
+    let blockhash = connection.get_latest_blockhash().unwrap();
+    let transaction =
+        Transaction::new_signed_with_payer(&[instruction], Some(&pub_key), &[&pair], blockhash);
+
+    match connection.send_and_confirm_transaction(&transaction) {
+        Ok(tx) => {
+            println!("send message tx : {:?}", tx);
+        }
+        Err(e) => {
+            println!("send message error : {:?}", e);
+        }
+    }
+    Ok(())
 }

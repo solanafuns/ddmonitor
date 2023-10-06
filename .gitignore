@@ -23,3 +23,5 @@ test-ledger
 
 private
 .DS_Store
+
+dist

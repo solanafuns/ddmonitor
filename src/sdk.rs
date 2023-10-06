@@ -5,26 +5,19 @@ use {
         engine::{self, general_purpose},
         Engine as _,
     },
-    borsh::{self, BorshDeserialize, BorshSerialize},
     solana_account_decoder::{UiAccountData, UiAccountEncoding},
     solana_client::{pubsub_client::PubsubClient, rpc_client::RpcClient},
     solana_program::pubkey::Pubkey,
     solana_rpc_client_api::config::RpcAccountInfoConfig,
     solana_sdk::{commitment_config::CommitmentConfig, signer::keypair::Keypair},
     std::io::Result,
+    std::{thread, time},
 };
 
 const PRIVATE_PATH: &str = "./private/private.json";
 
 pub fn hello(msg: &str) {
     println!("hello world {} !", msg);
-}
-
-#[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
-pub enum InstructionData {
-    RegisterQueue { name: String },
-    PushMessage { name: String },
-    Empty(u8),
 }
 
 pub fn init_solana_wallet() -> std::io::Result<Keypair> {
@@ -116,4 +109,24 @@ pub fn base64_decode(data_b64: &str) -> Result<Vec<u8>> {
 pub fn base64_encode(data: &[u8]) -> String {
     let engine = engine::GeneralPurpose::new(&alphabet::STANDARD, general_purpose::PAD);
     engine.encode(data)
+}
+
+pub fn confirm_balance(connection: &RpcClient, pub_key: &Pubkey, sol_count: u64) {
+    loop {
+        let balance = connection.get_balance(&pub_key).unwrap();
+        println!("current balance is : {}", balance);
+        if balance >= runtime::LAMPORTS_PER_SOL * sol_count {
+            break;
+        } else {
+            if runtime::AIRDROP {
+                let _ = connection.request_airdrop(&pub_key, runtime::LAMPORTS_PER_SOL * sol_count);
+            }
+            let delay = time::Duration::from_secs(3);
+            thread::sleep(delay);
+        }
+    }
+}
+
+pub fn print_transaction_logs(connection: &RpcClient, tx: &solana_sdk::transaction::Transaction) {
+    println!("transaction logs : {:?}", tx);
 }

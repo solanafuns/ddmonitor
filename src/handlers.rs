@@ -12,6 +12,10 @@ pub fn main(b64data: String) {
         if !queue.is_err() {
             let queue = queue.unwrap();
             println!("queue data : {:?}", queue.data);
+            let utf8_message = String::from_utf8(queue.data);
+            if !utf8_message.is_err() {
+                println!("message : {}", utf8_message.unwrap());
+            }
         }
     }
 }

@@ -1,6 +1,6 @@
 use {
     crate::operator,
-    borsh::to_vec,
+    borsh::{to_vec, BorshDeserialize},
     solana_program::{
         account_info::{next_account_info, AccountInfo},
         entrypoint::ProgramResult,
@@ -86,21 +86,51 @@ pub fn do_create_queue(
 pub fn do_push_message(
     accounts: &[AccountInfo],
     seed_str: &str,
-    data: &str,
+    message_data: &str,
     program_id: &Pubkey,
 ) -> ProgramResult {
     msg!(
         "You will push one message to Queue account with name : {}",
         seed_str
     );
+    let account_info_iter = &mut accounts.iter();
+    let payer = next_account_info(account_info_iter)?;
+    let queue_account: &AccountInfo<'_> = next_account_info(account_info_iter)?;
+    let system_account: &AccountInfo<'_> = next_account_info(account_info_iter)?;
+
+    let (pda, bump_seed) = Pubkey::find_program_address(&[seed_str.as_bytes()], program_id);
+
+    msg!(
+        "from client account info: system_account: {:?} , pda: {:?},bump_seed : {} ",
+        system_account,
+        pda,
+        bump_seed
+    );
+
+    // assert!(
+    //     payer.is_signer
+    //         && payer.is_writable
+    //         && queue_account.is_writable
+    //         && queue_account.owner == program_id
+    //         && pda != *queue_account.key,
+    //     "users invalid!"
+    // );
+
+    let mut user_queue = operator::Queue::try_from_slice(&queue_account.data.borrow())?;
+    user_queue.push_data(payer.key.clone(), String::from(message_data).into_bytes());
+    msg!("current data is : {:?}", user_queue.data);
+    let q_data = to_vec(&user_queue).unwrap();
+
+    queue_account.data.borrow_mut().copy_from_slice(&q_data);
+
     Ok(())
 }
 
 pub fn do_add_user_pub(
-    accounts: &[AccountInfo],
-    seed_str: &str,
-    user_pub: &str,
-    program_id: &Pubkey,
+    _accounts: &[AccountInfo],
+    _seed_str: &str,
+    _user_pub: &str,
+    _program_id: &Pubkey,
 ) -> ProgramResult {
     Ok(())
 }

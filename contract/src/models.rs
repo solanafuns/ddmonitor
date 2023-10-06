@@ -1,5 +1,7 @@
-use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::pubkey::Pubkey;
+use {
+    borsh::{BorshDeserialize, BorshSerialize},
+    solana_program::{clock, pubkey::Pubkey, sysvar::Sysvar},
+};
 
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub struct Queue {
@@ -7,16 +9,20 @@ pub struct Queue {
     pub allow: Vec<Pubkey>,
     pub data: Vec<u8>,
     pub need_data_size: usize,
+    pub created_at: i64,
 }
 
 impl Queue {
     pub fn new_queue(creator: &Pubkey, allow: &Vec<Pubkey>, data_size: usize) -> Self {
+        let clock = clock::Clock::get().unwrap();
+
         let data: Vec<u8> = vec![0; data_size];
         Self {
             creator: creator.clone(),
             allow: allow.clone(),
             need_data_size: data_size,
             data,
+            created_at: clock.unix_timestamp,
         }
     }
     pub fn push_data(&mut self, sender_pub: Pubkey, data: Vec<u8>) -> bool {

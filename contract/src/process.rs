@@ -1,5 +1,5 @@
 use {
-    crate::operator,
+    crate::models,
     borsh::{to_vec, BorshDeserialize},
     solana_program::{
         account_info::{next_account_info, AccountInfo},
@@ -53,12 +53,12 @@ pub fn do_create_queue(
         let mut allow_keys = Vec::new();
 
         for _ in 0..allow_count {
-            allow_keys.push(Pubkey::default());
+            allow_keys.push(system_account.key.clone());
         }
 
         allow_keys[0] = payer.key.clone();
 
-        let data_queue = operator::Queue::new_queue(&payer.key, &allow_keys, data_size);
+        let data_queue = models::Queue::new_queue(&payer.key, &allow_keys, data_size);
         let q_data = to_vec(&data_queue).unwrap();
         let pda_space: u64 = q_data.len() as u64;
 
@@ -116,7 +116,7 @@ pub fn do_push_message(
     //     "users invalid!"
     // );
 
-    let mut user_queue = operator::Queue::try_from_slice(&queue_account.data.borrow())?;
+    let mut user_queue = models::Queue::try_from_slice(&queue_account.data.borrow())?;
     user_queue.push_data(payer.key.clone(), String::from(message_data).into_bytes());
     msg!("current data is : {:?}", user_queue.data);
     let q_data = to_vec(&user_queue).unwrap();

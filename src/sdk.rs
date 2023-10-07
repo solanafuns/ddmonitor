@@ -124,16 +124,18 @@ pub fn confirm_balance(
     connection: &RpcClient,
     network: &Network,
     pub_key: &Pubkey,
-    sol_count: u64,
+    air_drop_sol: u64,
 ) {
     loop {
         let balance = connection.get_balance(&pub_key).unwrap();
         println!("current balance is : {}", balance);
-        if balance >= runtime::LAMPORTS_PER_SOL * sol_count {
+        if balance >= runtime::LAMPORTS_PER_SOL {
             break;
         } else {
             if network.airdrop_enable() {
-                let _ = connection.request_airdrop(&pub_key, runtime::LAMPORTS_PER_SOL * sol_count);
+                println!("airdrop sol : {}", air_drop_sol);
+                let _ =
+                    connection.request_airdrop(&pub_key, runtime::LAMPORTS_PER_SOL * air_drop_sol);
             }
             let delay = time::Duration::from_secs(3);
             thread::sleep(delay);
@@ -141,6 +143,7 @@ pub fn confirm_balance(
     }
 }
 
+#[derive(Debug)]
 pub enum Network {
     Local,
     Dev,

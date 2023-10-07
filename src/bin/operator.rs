@@ -28,9 +28,10 @@ struct Args {
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    runtime::init_app();
     let args = Args::parse();
+    runtime::init_app();
     let network = sdk::Network::from_string(&args.network);
+    println!("network is : {:?}", network);
     let pair = sdk::init_solana_wallet()?;
     let pub_key = pair.pubkey();
     let connection = sdk::get_rpc_client(&network);

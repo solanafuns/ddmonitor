@@ -25,33 +25,46 @@ struct Args {
     program: String,
 }
 
+const DATA_SIZE: usize = 64;
+const ALLOW_COUNT: u8 = 3;
+
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
     let args = Args::parse();
-    runtime::init_app();
     let network = sdk::Network::from_string(&args.network);
     let pair = sdk::init_solana_wallet().unwrap();
     let pub_key = pair.pubkey();
+
+    runtime::init_app();
     println!(
         "server pub_key address : {:?} , check and wait balance...",
         pair.pubkey()
     );
     let connection = sdk::get_rpc_client(&network);
     sdk::confirm_balance(&connection, &network, &pub_key, 5);
+    let program_account = runtime::program_account(args.program.clone());
+    if !sdk::program_available(&connection, &program_account) {
+        println!("program account is not available , exit...");
+        return Ok(());
+    }
 
     println!("now sol is ready , create one account for ddmonitor... ");
-    const DATA_SIZE: usize = 64;
-    const ALLOW_COUNT: u8 = 3;
+
     let queue_name = args.name;
-    let queue_account = sdk::pda_queue_account(&args.program, &queue_name);
-    println!("queue account is : {:?}", queue_account);
+    let queue_pub = sdk::pda_queue_account(&program_account, &queue_name);
+    println!("queue account is : {:?}", queue_pub);
 
     let queue_avaliable = {
-        let queue_info = connection.get_account(&queue_account).unwrap();
-        queue_info.owner == args.program.parse().unwrap()
-            && queue_info.lamports > 0
-            && !queue_info.executable
-            && queue_info.data.len() > 0
+        let queue_info = connection.get_account(&queue_pub);
+        if queue_info.is_err() {
+            false
+        } else {
+            let queue_info = queue_info.unwrap();
+            queue_info.owner == args.program.parse().unwrap()
+                && queue_info.lamports > 0
+                && !queue_info.executable
+                && queue_info.data.len() > 0
+        }
     };
 
     if !queue_avaliable {
@@ -60,11 +73,11 @@ async fn main() -> std::io::Result<()> {
             .get_minimum_balance_for_rent_exemption(queue_size)
             .unwrap();
 
-        println!("need sol: {}", lamports);
+        println!("queue pda need sol: {}", lamports);
 
         let accounts = vec![
             AccountMeta::new(pub_key.clone(), true),
-            AccountMeta::new(queue_account.clone(), false),
+            AccountMeta::new(queue_pub.clone(), false),
             AccountMeta::new_readonly(system_program::ID, false),
         ];
 
@@ -83,6 +96,7 @@ async fn main() -> std::io::Result<()> {
         let transaction =
             Transaction::new_signed_with_payer(&[instruction], Some(&pub_key), &[&pair], blockhash);
 
+        println!("create queue request send ...");
         match connection.send_and_confirm_transaction(&transaction) {
             Ok(tx) => {
                 println!("create queue account tx : {:?}", tx);
@@ -101,7 +115,7 @@ async fn main() -> std::io::Result<()> {
         println!("queue account is exist , skip create...");
     }
 
-    sdk::get_account_updates(&network, &queue_account, handlers::main).unwrap();
+    sdk::get_account_updates(&network, &queue_pub, handlers::main).unwrap();
 
     Ok(())
 }

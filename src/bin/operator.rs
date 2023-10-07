@@ -30,26 +30,51 @@ struct Args {
 async fn main() -> std::io::Result<()> {
     let args = Args::parse();
     let network = sdk::Network::from_string(&args.network);
-    runtime::init_app();
     let pair = sdk::init_solana_wallet()?;
     let pub_key = pair.pubkey();
-    println!("current wallet address : {}", pub_key);
-
     let connection = sdk::get_rpc_client(&network);
+    let program_account = runtime::program_account(args.program.clone());
+
+    runtime::init_app();
+    println!("current wallet address : {}", pub_key);
     sdk::confirm_balance(&connection, &network, &pub_key, 5);
+
+    if !sdk::program_available(&connection, &program_account) {
+        println!("program account is not available , exit...");
+        return Ok(());
+    }
+
     let queue_name = args.name.clone();
-    let queue_account = sdk::pda_queue_account(&args.program, &queue_name);
+    let queue_pub = sdk::pda_queue_account(&program_account, &queue_name);
+
+    let queue_avaliable = {
+        let queue_info = connection.get_account(&queue_pub);
+        if queue_info.is_err() {
+            false
+        } else {
+            let queue_info = queue_info.unwrap();
+            queue_info.owner == args.program.parse().unwrap()
+                && queue_info.lamports > 0
+                && !queue_info.executable
+                && queue_info.data.len() > 0
+        }
+    };
+
+    if !queue_avaliable {
+        println!("queue {}<{}> is not available ", queue_pub, queue_name);
+        return Ok(());
+    }
 
     println!(
         "you will push message : {} to : {}, queue account : {}",
         args.message,
         args.name,
-        queue_account.to_string()
+        queue_pub.to_string()
     );
 
     let accounts = vec![
         AccountMeta::new(pub_key.clone(), true),
-        AccountMeta::new(queue_account.clone(), false),
+        AccountMeta::new(queue_pub.clone(), false),
         AccountMeta::new_readonly(system_program::ID, false),
     ];
 

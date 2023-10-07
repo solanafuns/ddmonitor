@@ -45,8 +45,7 @@ pub fn get_rpc_client(network: &Network) -> RpcClient {
     RpcClient::new_with_commitment(network.get_rpc_url(), CommitmentConfig::finalized())
 }
 
-pub fn pda_queue_account(program_id: &str, name: &str) -> Pubkey {
-    let program_account = runtime::program_account(program_id.to_string());
+pub fn pda_queue_account(program_account: &Pubkey, name: &str) -> Pubkey {
     println!(
         "program_account is : {} , name is : {}",
         program_account.to_string(),
@@ -113,6 +112,12 @@ pub fn base64_decode(data_b64: &str) -> Result<Vec<u8>> {
 pub fn base64_encode(data: &[u8]) -> String {
     let engine = engine::GeneralPurpose::new(&alphabet::STANDARD, general_purpose::PAD);
     engine.encode(data)
+}
+
+pub fn program_available(connection: &RpcClient, program_id: &Pubkey) -> bool {
+    let program_info = connection.get_account(program_id).unwrap();
+    println!("program_info is : {:?}", program_info);
+    program_info.lamports > 0 && program_info.executable && program_info.data.len() > 0
 }
 
 pub fn confirm_balance(

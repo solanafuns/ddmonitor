@@ -26,6 +26,7 @@ jobs:
         run: |
           solana config set --url devnet
           solana airdrop 5 
+          solana-keygen new -o /home/runner/.config/solana/id.json
           solana program deploy dist/contract/contract.so > dist/contract/deploy.md
       - uses: actions/upload-artifact@v3
         with:

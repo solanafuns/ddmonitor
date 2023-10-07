@@ -6,6 +6,7 @@ use {
     solana_sdk::{instruction::Instruction, signer::Signer, transaction::Transaction},
 };
 
+/// One server to watch ddmonitor queue and print message
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {

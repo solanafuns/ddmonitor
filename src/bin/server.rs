@@ -30,12 +30,12 @@ const ALLOW_COUNT: u8 = 3;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
+    runtime::init_app();
     let args = Args::parse();
     let network = sdk::Network::from_string(&args.network);
     let pair = sdk::init_solana_wallet().unwrap();
     let pub_key = pair.pubkey();
 
-    runtime::init_app();
     println!(
         "server pub_key address : {:?} , check and wait balance...",
         pair.pubkey()

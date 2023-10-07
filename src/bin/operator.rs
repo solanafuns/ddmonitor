@@ -28,6 +28,7 @@ struct Args {
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
+    runtime::init_app();
     let args = Args::parse();
     let network = sdk::Network::from_string(&args.network);
     let pair = sdk::init_solana_wallet()?;
@@ -35,7 +36,6 @@ async fn main() -> std::io::Result<()> {
     let connection = sdk::get_rpc_client(&network);
     let program_account = runtime::program_account(args.program.clone());
 
-    runtime::init_app();
     println!("current wallet address : {}", pub_key);
     sdk::confirm_balance(&connection, &network, &pub_key, 5);
 

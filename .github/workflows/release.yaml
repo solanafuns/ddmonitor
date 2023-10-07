@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-sbf:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: hecrj/setup-rust-action@v2
         with:
@@ -33,7 +33,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             suffix: linux
           # - os: windows-latest
           #   suffix: win

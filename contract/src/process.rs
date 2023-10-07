@@ -107,14 +107,18 @@ pub fn do_push_message(
         bump_seed
     );
 
-    // assert!(
-    //     payer.is_signer
-    //         && payer.is_writable
-    //         && queue_account.is_writable
-    //         && queue_account.owner == program_id
-    //         && pda != *queue_account.key,
-    //     "users invalid!"
-    // );
+    assert!(
+        payer.is_signer
+            && payer.is_writable
+            && queue_account.is_writable
+            && queue_account.owner == program_id,
+        "users invalid!"
+    );
+
+    if pda != *queue_account.key {
+        msg!("Queue account does not have the correct pda");
+        return Err(solana_program::program_error::ProgramError::InvalidSeeds);
+    }
 
     let mut user_queue = models::Queue::try_from_slice(&queue_account.data.borrow())?;
     user_queue.push_data(payer.key.clone(), String::from(message_data).into_bytes());

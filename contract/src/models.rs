@@ -15,7 +15,6 @@ pub struct Queue {
 impl Queue {
     pub fn new_queue(creator: &Pubkey, allow: &Vec<Pubkey>, data_size: usize) -> Self {
         let clock = clock::Clock::get().unwrap();
-
         let data: Vec<u8> = vec![0; data_size];
         Self {
             creator: creator.clone(),
@@ -52,14 +51,15 @@ impl Queue {
     }
 
     pub fn queue_size(data_size: usize, allow_count: u8) -> usize {
-        let mut allow_list = Vec::new();
-        let mut mut_index = allow_count;
-        while mut_index > 0 {
-            allow_list.push(Pubkey::new_unique());
-            mut_index -= 1;
-        }
-        let tmp_queue = Self::new_queue(&Pubkey::new_unique(), &allow_list, data_size);
-        let q_data = to_vec(&tmp_queue).unwrap();
-        q_data.len()
+        let allow: Vec<Pubkey> = vec![Pubkey::default(); allow_count as usize];
+        let data = vec![0; data_size];
+        let tmp_queue = Self {
+            creator: Pubkey::new_unique(),
+            need_data_size: data_size,
+            allow,
+            data,
+            created_at: 0,
+        };
+        to_vec(&tmp_queue).unwrap().len()
     }
 }

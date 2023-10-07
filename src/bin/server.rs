@@ -43,54 +43,65 @@ async fn main() -> std::io::Result<()> {
     const DATA_SIZE: usize = 64;
     const ALLOW_COUNT: u8 = 3;
     let queue_name = args.name;
-    let queue_account = sdk::pda_queue_account(&network, &queue_name);
+    let queue_account = sdk::pda_queue_account(&args.program, &queue_name);
     println!("queue account is : {:?}", queue_account);
-    let queue_size = models::Queue::queue_size(DATA_SIZE, ALLOW_COUNT);
-    let lamports = connection
-        .get_minimum_balance_for_rent_exemption(queue_size)
-        .unwrap();
 
-    println!("need sol: {}", lamports);
+    let queue_avaliable = {
+        let queue_info = connection.get_account(&queue_account).unwrap();
+        queue_info.owner == args.program.parse().unwrap()
+            && queue_info.lamports > 0
+            && !queue_info.executable
+            && queue_info.data.len() > 0
+    };
 
-    // The accounts required by both our on-chain program and the system program's
-    // `create_account` instruction, including the vault's address.
-    let accounts = vec![
-        AccountMeta::new(pub_key.clone(), true),
-        AccountMeta::new(queue_account.clone(), false),
-        AccountMeta::new_readonly(system_program::ID, false),
-    ];
+    if !queue_avaliable {
+        let queue_size = models::Queue::queue_size(DATA_SIZE, ALLOW_COUNT);
+        let lamports = connection
+            .get_minimum_balance_for_rent_exemption(queue_size)
+            .unwrap();
 
-    // Create the instruction by serializing our instruction data via borsh
-    let instruction = Instruction::new_with_borsh(
-        runtime::program_account(network.program_address()),
-        &InstructionData::RegisterQueue {
-            name: queue_name.to_string(),
-            data_size: DATA_SIZE,
-            allow_count: ALLOW_COUNT,
-        },
-        accounts,
-    );
+        println!("need sol: {}", lamports);
 
-    let blockhash = connection.get_latest_blockhash().unwrap();
+        let accounts = vec![
+            AccountMeta::new(pub_key.clone(), true),
+            AccountMeta::new(queue_account.clone(), false),
+            AccountMeta::new_readonly(system_program::ID, false),
+        ];
 
-    let transaction =
-        Transaction::new_signed_with_payer(&[instruction], Some(&pub_key), &[&pair], blockhash);
+        // Create the instruction by serializing our instruction data via borsh
+        let instruction = Instruction::new_with_borsh(
+            runtime::program_account(args.program.clone()),
+            &InstructionData::RegisterQueue {
+                name: queue_name.to_string(),
+                data_size: DATA_SIZE,
+                allow_count: ALLOW_COUNT,
+            },
+            accounts,
+        );
 
-    match connection.send_and_confirm_transaction(&transaction) {
-        Ok(tx) => {
-            println!("create queue account tx : {:?}", tx);
-            if args.allow != "default" {
-                println!("no allow account , exit...");
-                return Ok(());
+        let blockhash = connection.get_latest_blockhash().unwrap();
+        let transaction =
+            Transaction::new_signed_with_payer(&[instruction], Some(&pub_key), &[&pair], blockhash);
+
+        match connection.send_and_confirm_transaction(&transaction) {
+            Ok(tx) => {
+                println!("create queue account tx : {:?}", tx);
+                if args.allow != "default" {
+                    println!("no allow account , exit...");
+                    return Ok(());
+                }
             }
-
-            sdk::get_account_updates(&network, &queue_account, handlers::main).unwrap();
+            Err(err) => {
+                let _transaction_err = err.get_transaction_error().unwrap();
+                println!("create queue account error : {:?}", _transaction_err);
+                println!("create queue account error : {:?}", err);
+            }
         }
-        Err(err) => {
-            let _transaction_err = err.get_transaction_error().unwrap();
-            println!("create queue account error : {:?}", _transaction_err);
-            println!("create queue account error : {:?}", err);
-        }
+    } else {
+        println!("queue account is exist , skip create...");
     }
+
+    sdk::get_account_updates(&network, &queue_account, handlers::main).unwrap();
+
     Ok(())
 }

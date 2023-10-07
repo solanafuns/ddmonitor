@@ -38,7 +38,7 @@ async fn main() -> std::io::Result<()> {
     let connection = sdk::get_rpc_client(&network);
     sdk::confirm_balance(&connection, &network, &pub_key, 5);
     let queue_name = args.name.clone();
-    let queue_account = sdk::pda_queue_account(&network, &queue_name);
+    let queue_account = sdk::pda_queue_account(&args.program, &queue_name);
 
     println!(
         "you will push message : {} to : {}, queue account : {}",
@@ -54,7 +54,7 @@ async fn main() -> std::io::Result<()> {
     ];
 
     let instruction = Instruction::new_with_borsh(
-        runtime::program_account(network.program_address()),
+        runtime::program_account(args.program.clone()),
         &InstructionData::PushMessage {
             name: args.name,
             data: args.message,

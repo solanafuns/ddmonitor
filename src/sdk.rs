@@ -45,8 +45,8 @@ pub fn get_rpc_client(network: &Network) -> RpcClient {
     RpcClient::new_with_commitment(network.get_rpc_url(), CommitmentConfig::finalized())
 }
 
-pub fn pda_queue_account(network: &Network, name: &str) -> Pubkey {
-    let program_account = runtime::program_account(network.program_address());
+pub fn pda_queue_account(program_id: &str, name: &str) -> Pubkey {
+    let program_account = runtime::program_account(program_id.to_string());
     println!(
         "program_account is : {} , name is : {}",
         program_account.to_string(),
@@ -179,15 +179,5 @@ impl Network {
             Self::Test => true,
             Self::MainBeta => false,
         }
-    }
-
-    pub fn program_address(&self) -> String {
-        "HZRahcg3oLXw4GScUN7bzCfHWx33G6SBrg6G1vVL1qEm".to_string()
-        // match self {
-        //     Self::Local => "HZRahcg3oLXw4GScUN7bzCfHWx33G6SBrg6G1vVL1qEm",
-        //     Self::Dev => :,
-        //     Self::Test => true,
-        //     Self::MainBeta => false,
-        // }
     }
 }

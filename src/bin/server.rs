@@ -43,7 +43,7 @@ async fn main() -> std::io::Result<()> {
     const DATA_SIZE: usize = 64;
     const ALLOW_COUNT: u8 = 3;
     let queue_name = args.name;
-    let queue_account = sdk::pda_queue_account(&queue_name);
+    let queue_account = sdk::pda_queue_account(&network, &queue_name);
     println!("queue account is : {:?}", queue_account);
     let queue_size = models::Queue::queue_size(DATA_SIZE, ALLOW_COUNT);
     let lamports = connection
@@ -62,7 +62,7 @@ async fn main() -> std::io::Result<()> {
 
     // Create the instruction by serializing our instruction data via borsh
     let instruction = Instruction::new_with_borsh(
-        runtime::program_account(),
+        runtime::program_account(network.program_address()),
         &InstructionData::RegisterQueue {
             name: queue_name.to_string(),
             data_size: DATA_SIZE,

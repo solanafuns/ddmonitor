@@ -22,11 +22,17 @@ jobs:
           echo "/home/runner/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
       - name: build sbf
         run: cargo build-sbf --manifest-path=./contract/Cargo.toml --sbf-out-dir=dist/contract
+      - name: deploy contract
+        run: |
+          solana config set --url devnet
+          solana airdrop 5 
+          solana program deploy dist/contract/contract.so > dist/contract/deploy.md
       - uses: actions/upload-artifact@v3
         with:
           name: target
           path: |
             dist/contract/contract.so
+            dist/contract/deploy.md
 
   build-binary:
     runs-on: ${{ matrix.os }}

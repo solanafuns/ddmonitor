@@ -5,8 +5,6 @@ use {
     std::{env, fs, path, str::FromStr},
 };
 
-pub const PROGRAME_ID: &str = "HZRahcg3oLXw4GScUN7bzCfHWx33G6SBrg6G1vVL1qEm";
-
 pub const LAMPORTS_PER_SOL: u64 = u64::pow(10, 9);
 
 pub fn get_base_dir() -> String {
@@ -45,8 +43,8 @@ pub fn app_path(sub: &str) -> String {
     path.join(sub).to_str().unwrap().to_string()
 }
 
-pub fn program_account() -> Pubkey {
-    Pubkey::from_str(PROGRAME_ID).unwrap()
+pub fn program_account(program_id: String) -> Pubkey {
+    Pubkey::from_str(&program_id).unwrap()
 }
 
 pub fn current_timestamp() -> i64 {

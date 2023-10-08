@@ -1,5 +1,6 @@
 use {
     chrono::{DateTime, Local},
+    log::info,
     serde::{Deserialize, Serialize},
     solana_program::pubkey::Pubkey,
     std::{env, fs, path, str::FromStr},
@@ -31,7 +32,7 @@ pub fn confirm_dir() {
 pub fn confirm_app_dir(sub: &str) {
     let check_path = app_path(sub);
     let path = path::Path::new(&check_path);
-    println!("check path : [ {} ] is dir...", path.display());
+    info!("check path : [ {} ] is dir...", path.display());
     if !path.exists() {
         fs::create_dir_all(path).unwrap();
     }

@@ -1,7 +1,9 @@
 [package]
 name = "ddmonitor"
-version = "0.1.9"
+version = "0.1.12"
 edition = "2021"
+authors = ["v1xingyue <qixingyue@gmail.com>"]
+
 
 [workspace]
 members = [
@@ -15,8 +17,8 @@ borsh = "0.10.3"
 serde_json = "1.0.107"
 serde = { version = "1.0", features = ["derive"] }
 solana-client = "1.16.14"
-solana-program = "1.16.13"
-solana-sdk = "1.16.13"
+solana-program = "1.16.14"
+solana-sdk = "1.16.14"
 thiserror = "1.0.48"
 tokio = { version = "1", features = ["full"] }
 solana-rpc-client-api = "1.16.14"
@@ -25,4 +27,5 @@ clap = { version = "4.4.6", features = ["derive"] }
 base64 = "0.21.4"
 chrono = "0.4.31"
 contract = { path = "./contract" }
-
+log = "0.4.20"
+env_logger = "0.10.0"

@@ -2,6 +2,8 @@ use {
     clap::Parser,
     contract::instruction::InstructionData,
     ddmonitor::{runtime, sdk},
+    env_logger::Env,
+    log::{error, info},
     solana_program::{instruction::AccountMeta, system_program},
     solana_sdk::{instruction::Instruction, signer::Signer, transaction::Transaction},
 };
@@ -19,7 +21,7 @@ struct Args {
     message: String,
 
     /// Network to communicate with
-    #[arg(short, long, default_value_t = String::from("local"))]
+    #[arg(long, default_value_t = String::from("local"))]
     network: String,
 
     /// Solana program address
@@ -29,20 +31,32 @@ struct Args {
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
+    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
+    info!("ddmonitor operator start ...");
+
     let args = Args::parse();
     runtime::init_app();
     let network = sdk::Network::from_string(&args.network);
-    println!("network is : {:?}", network);
+    info!("network is : <{:?}> ", network);
     let pair = sdk::init_solana_wallet()?;
     let pub_key = pair.pubkey();
     let connection = sdk::get_rpc_client(&network);
     let program_account = runtime::program_account(args.program.clone());
 
-    println!("current wallet address : {}", pub_key);
+    info!("current wallet address : {}", pub_key);
+    match connection.get_version() {
+        Ok(version) => {
+            info!("solana version : {}", version.solana_core);
+        }
+        Err(e) => {
+            error!("get solana version error : {:?}", e);
+            return Ok(());
+        }
+    }
     sdk::confirm_balance(&connection, &network, &pub_key, 5);
 
     if !sdk::program_available(&connection, &program_account) {
-        println!("program account is not available , exit...");
+        error!("program account is not available , exit...");
         return Ok(());
     }
 
@@ -63,11 +77,11 @@ async fn main() -> std::io::Result<()> {
     };
 
     if !queue_avaliable {
-        println!("queue {}<{}> is not available ", queue_pub, queue_name);
+        error!("queue {}<{}> is not available ", queue_pub, queue_name);
         return Ok(());
     }
 
-    println!(
+    info!(
         "you will push message : {} to : {}, queue account : {}",
         args.message,
         args.name,
@@ -95,10 +109,10 @@ async fn main() -> std::io::Result<()> {
 
     match connection.send_and_confirm_transaction(&transaction) {
         Ok(tx) => {
-            println!("send message tx : {:?}", tx);
+            info!("send message tx : {:?}", tx);
         }
         Err(e) => {
-            println!("send message error : {:?}", e);
+            error!("send message error : {:?}", e);
         }
     }
     Ok(())

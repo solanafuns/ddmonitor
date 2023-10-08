@@ -5,6 +5,7 @@ use {
         engine::{self, general_purpose},
         Engine as _,
     },
+    log::{error, info},
     solana_account_decoder::{UiAccountData, UiAccountEncoding},
     solana_client::{pubsub_client::PubsubClient, rpc_client::RpcClient},
     solana_program::pubkey::Pubkey,
@@ -16,10 +17,6 @@ use {
 
 const PRIVATE_PATH: &str = "./private/private.json";
 
-pub fn hello(msg: &str) {
-    println!("hello world {} !", msg);
-}
-
 pub fn init_solana_wallet() -> std::io::Result<Keypair> {
     // open config file
     let config_path = runtime::app_path(PRIVATE_PATH);
@@ -29,7 +26,7 @@ pub fn init_solana_wallet() -> std::io::Result<Keypair> {
             Ok(Keypair::from_base58_string(&config.secret))
         }
         Err(e) => {
-            println!("error reading config file : {}", e);
+            error!("error reading config file : {}", e);
             let wallet = Keypair::new();
             let s = &ServerPrivate {
                 secret: wallet.to_base58_string(),
@@ -46,7 +43,7 @@ pub fn get_rpc_client(network: &Network) -> RpcClient {
 }
 
 pub fn pda_queue_account(program_account: &Pubkey, name: &str) -> Pubkey {
-    println!(
+    info!(
         "program_account is : {} , name is : {}",
         program_account.to_string(),
         name
@@ -73,14 +70,14 @@ pub fn get_account_updates(
         )
         .unwrap();
 
-    println!(
+    info!(
         "begin loop account event with : {}",
         account_pubkey.to_string()
     );
     loop {
         match account_subscription_receiver.recv() {
             Ok(response) => {
-                println!("account subscription received");
+                info!("account subscription received");
                 let ui_account = response.value;
                 match ui_account.data {
                     UiAccountData::Binary(b64_str, _encoding) => {
@@ -90,7 +87,7 @@ pub fn get_account_updates(
                 }
             }
             Err(e) => {
-                println!("account subscription error: {:?}", e);
+                error!("account subscription error: {:?}", e);
                 break;
             }
         }
@@ -115,9 +112,16 @@ pub fn base64_encode(data: &[u8]) -> String {
 }
 
 pub fn program_available(connection: &RpcClient, program_id: &Pubkey) -> bool {
-    let program_info = connection.get_account(program_id).unwrap();
-    println!("program_info is : {:?}", program_info);
-    program_info.lamports > 0 && program_info.executable && program_info.data.len() > 0
+    match connection.get_account(program_id) {
+        Ok(program_info) => {
+            info!("program_info is : {:?}", program_info);
+            program_info.lamports > 0 && program_info.executable && program_info.data.len() > 0
+        }
+        Err(e) => {
+            error!("get program info error : {:?}", e);
+            false
+        }
+    }
 }
 
 pub fn confirm_balance(
@@ -128,12 +132,12 @@ pub fn confirm_balance(
 ) {
     loop {
         let balance = connection.get_balance(&pub_key).unwrap();
-        println!("current balance is : {}", balance);
+        info!("current balance is : {}", balance);
         if balance >= runtime::LAMPORTS_PER_SOL {
             break;
         } else {
             if network.airdrop_enable() {
-                println!("airdrop sol : {}", air_drop_sol);
+                info!("airdrop sol : {}", air_drop_sol);
                 let _ =
                     connection.request_airdrop(&pub_key, runtime::LAMPORTS_PER_SOL * air_drop_sol);
             }

@@ -2,6 +2,8 @@ use {
     clap::Parser,
     contract::{instruction::InstructionData, models},
     ddmonitor::{handlers, runtime, sdk},
+    env_logger::Env,
+    log::{error, info},
     solana_program::{instruction::AccountMeta, system_program},
     solana_sdk::{instruction::Instruction, signer::Signer, transaction::Transaction},
 };
@@ -18,7 +20,7 @@ struct Args {
     allow: String,
 
     /// Network to communicate with
-    #[arg(short, long, default_value_t = String::from("local"))]
+    #[arg(long, default_value_t = String::from("local"))]
     network: String,
 
     /// Solana program address
@@ -31,14 +33,15 @@ const ALLOW_COUNT: u8 = 3;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
+    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     runtime::init_app();
     let args = Args::parse();
     let network = sdk::Network::from_string(&args.network);
-    println!("network is : {:?}", network);
+    info!("network is : {:?}", network);
     let pair = sdk::init_solana_wallet().unwrap();
     let pub_key = pair.pubkey();
 
-    println!(
+    info!(
         "server pub_key address : {:?} , check and wait balance...",
         pair.pubkey()
     );
@@ -46,15 +49,15 @@ async fn main() -> std::io::Result<()> {
     sdk::confirm_balance(&connection, &network, &pub_key, 5);
     let program_account = runtime::program_account(args.program.clone());
     if !sdk::program_available(&connection, &program_account) {
-        println!("program account is not available , exit...");
+        error!("program account is not available , exit...");
         return Ok(());
     }
 
-    println!("now sol is ready , create one account for ddmonitor... ");
+    info!("now sol is ready , create one account for ddmonitor... ");
 
     let queue_name = args.name;
     let queue_pub = sdk::pda_queue_account(&program_account, &queue_name);
-    println!("queue account is : {:?}", queue_pub);
+    info!("queue account is : {:?}", queue_pub);
 
     let queue_avaliable = {
         let queue_info = connection.get_account(&queue_pub);
@@ -75,7 +78,7 @@ async fn main() -> std::io::Result<()> {
             .get_minimum_balance_for_rent_exemption(queue_size)
             .unwrap();
 
-        println!("queue pda need sol: {}", lamports);
+        info!("queue pda need sol: {}", lamports);
 
         let accounts = vec![
             AccountMeta::new(pub_key.clone(), true),
@@ -98,23 +101,23 @@ async fn main() -> std::io::Result<()> {
         let transaction =
             Transaction::new_signed_with_payer(&[instruction], Some(&pub_key), &[&pair], blockhash);
 
-        println!("create queue request send ...");
+        info!("create queue request send ...");
         match connection.send_and_confirm_transaction(&transaction) {
             Ok(tx) => {
-                println!("create queue account tx : {:?}", tx);
+                info!("create queue account tx : {:?}", tx);
                 if args.allow != "default" {
-                    println!("no allow account , exit...");
+                    error!("no allow account , exit...");
                     return Ok(());
                 }
             }
             Err(err) => {
                 let _transaction_err = err.get_transaction_error().unwrap();
-                println!("create queue account error : {:?}", _transaction_err);
-                println!("create queue account error : {:?}", err);
+                error!("create queue account error : {:?}", _transaction_err);
+                error!("create queue account error : {:?}", err);
             }
         }
     } else {
-        println!("queue account is exist , skip create...");
+        info!("queue account is exist , skip create...");
     }
 
     sdk::get_account_updates(&network, &queue_pub, handlers::main).unwrap();

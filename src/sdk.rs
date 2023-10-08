@@ -124,6 +124,22 @@ pub fn program_available(connection: &RpcClient, program_id: &Pubkey) -> bool {
     }
 }
 
+pub fn connection_available(connection: &RpcClient) -> Result<bool> {
+    match connection.get_version() {
+        Ok(version) => {
+            info!("solana version : {}", version.solana_core);
+            Ok(true)
+        }
+        Err(e) => {
+            error!("get solana version error : {:?}", e);
+            Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                format!("get solana version error : {:?}", e),
+            ))
+        }
+    }
+}
+
 pub fn confirm_balance(
     connection: &RpcClient,
     network: &Network,

@@ -44,15 +44,8 @@ async fn main() -> std::io::Result<()> {
     let program_account = runtime::program_account(args.program.clone());
 
     info!("current wallet address : {}", pub_key);
-    match connection.get_version() {
-        Ok(version) => {
-            info!("solana version : {}", version.solana_core);
-        }
-        Err(e) => {
-            error!("get solana version error : {:?}", e);
-            return Ok(());
-        }
-    }
+    sdk::connection_available(&connection)?;
+
     sdk::confirm_balance(&connection, &network, &pub_key, 5);
 
     if !sdk::program_available(&connection, &program_account) {

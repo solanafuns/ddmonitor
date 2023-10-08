@@ -46,6 +46,7 @@ async fn main() -> std::io::Result<()> {
         pair.pubkey()
     );
     let connection = sdk::get_rpc_client(&network);
+    sdk::connection_available(&connection)?;
     sdk::confirm_balance(&connection, &network, &pub_key, 5);
     let program_account = runtime::program_account(args.program.clone());
     if !sdk::program_available(&connection, &program_account) {

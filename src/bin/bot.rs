@@ -1,6 +1,6 @@
 use {env_logger::Env, log::info, teloxide::prelude::*};
 
-//  TELOXIDE_TOKEN=6268131418:AAHcotYvZ3FI0lrJHmyMWUSOseyY4dxzM0I cargo run --bin bot
+// TELOXIDE_TOKEN= cargo run --bin bot
 
 #[tokio::main]
 async fn main() {

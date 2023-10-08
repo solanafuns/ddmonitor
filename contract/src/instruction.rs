@@ -11,8 +11,9 @@ pub enum InstructionData {
         name: String,
         data: String,
     },
-    AddUserPub {
+    UserPubOperation {
         name: String,
         user_pub: String,
+        allow: bool,
     },
 }

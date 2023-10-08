@@ -42,8 +42,12 @@ pub fn process_instruction(
                 InstructionData::PushMessage { name, data } => {
                     return process::do_push_message(accounts, &name, &data, program_id);
                 }
-                InstructionData::AddUserPub { name, user_pub } => {
-                    return process::do_add_user_pub(accounts, &name, &user_pub, program_id);
+                InstructionData::UserPubOperation {
+                    name,
+                    user_pub,
+                    allow,
+                } => {
+                    return process::do_add_user_pub(accounts, &name, &user_pub, allow, program_id);
                 }
             }
         }

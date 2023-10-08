@@ -134,6 +134,7 @@ pub fn do_add_user_pub(
     _accounts: &[AccountInfo],
     _seed_str: &str,
     _user_pub: &str,
+    _allow: bool,
     _program_id: &Pubkey,
 ) -> ProgramResult {
     Ok(())

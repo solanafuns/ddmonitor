@@ -29,3 +29,6 @@ chrono = "0.4.31"
 contract = { path = "./contract" }
 log = "0.4.20"
 env_logger = "0.10.0"
+
+
+teloxide = { version = "0.12", features = ["macros"] }

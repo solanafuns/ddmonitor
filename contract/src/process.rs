@@ -86,7 +86,7 @@ pub fn do_create_queue(
 pub fn do_push_message(
     accounts: &[AccountInfo],
     seed_str: &str,
-    message_data: &str,
+    message_data: &Vec<u8>,
     program_id: &Pubkey,
 ) -> ProgramResult {
     msg!(
@@ -121,7 +121,7 @@ pub fn do_push_message(
     }
 
     let mut user_queue = models::Queue::try_from_slice(&queue_account.data.borrow())?;
-    user_queue.push_data(payer.key.clone(), String::from(message_data).into_bytes());
+    user_queue.push_data(payer.key.clone(), message_data.clone());
     msg!("current data is : {:?}", user_queue.data);
     let q_data = to_vec(&user_queue).unwrap();
 

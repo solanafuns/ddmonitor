@@ -9,7 +9,7 @@ pub enum InstructionData {
     },
     PushMessage {
         name: String,
-        data: String,
+        data: Vec<u8>,
     },
     UserPubOperation {
         name: String,

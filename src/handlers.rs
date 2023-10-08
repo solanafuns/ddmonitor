@@ -13,7 +13,8 @@ pub fn main(b64data: String) {
         let queue = models::Queue::try_from_slice(&data);
         if !queue.is_err() {
             let queue = queue.unwrap();
-            info!("queue data : {:?}", queue.data);
+            info!("queue last change : {:?} ", queue.last_change);
+            info!("queue data : {:?} ", queue.data);
             let utf8_message = String::from_utf8(queue.data.clone());
             if !utf8_message.is_err() {
                 info!("message : {}", utf8_message.unwrap());
@@ -25,7 +26,7 @@ pub fn main(b64data: String) {
 
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub enum ActionInfo {
-    Hello(u8, u8),
+    ActionSample(u8, u8),
     None,
 }
 
@@ -57,8 +58,8 @@ impl ActionInfo {
     pub fn do_action(&self) {
         info!("you will do action : {:?}", &self);
         match &self {
-            ActionInfo::Hello(x, y) => {
-                info!("hello world: x=  {},y = {}", x, y);
+            ActionInfo::ActionSample(x, y) => {
+                info!("this is example action ! x =  {} , y = {}", x, y);
             }
             ActionInfo::None => {
                 error!("invalid action");

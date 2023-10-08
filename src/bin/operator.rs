@@ -128,7 +128,7 @@ async fn main() -> std::io::Result<()> {
             queue_pub.clone(),
             args.program.clone(),
             args.name.clone(),
-            handlers::ActionInfo::Hello.wrapper(),
+            handlers::ActionInfo::ActionSample(1, 2).wrapper(),
         );
 
         let blockhash = connection.get_latest_blockhash().unwrap();

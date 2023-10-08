@@ -10,6 +10,7 @@ pub struct Queue {
     pub data: Vec<u8>,
     pub need_data_size: usize,
     pub created_at: i64,
+    pub last_change: i64,
 }
 
 impl Queue {
@@ -22,12 +23,14 @@ impl Queue {
             need_data_size: data_size,
             data,
             created_at: clock.unix_timestamp,
+            last_change: clock.unix_timestamp,
         }
     }
     pub fn push_data(&mut self, sender_pub: Pubkey, data: Vec<u8>) -> bool {
         if self.allow.contains(&sender_pub) {
             self.data = data;
             self.pad_to_length(self.need_data_size, 0);
+            self.last_change = clock::Clock::get().unwrap().unix_timestamp;
             return true;
         }
         false
@@ -40,6 +43,7 @@ impl Queue {
                 break;
             }
         }
+        self.last_change = clock::Clock::get().unwrap().unix_timestamp;
     }
 
     fn pad_to_length(&mut self, desired_length: usize, padding_value: u8) {
@@ -59,6 +63,7 @@ impl Queue {
             allow,
             data,
             created_at: 0,
+            last_change: 0,
         };
         to_vec(&tmp_queue).unwrap().len()
     }

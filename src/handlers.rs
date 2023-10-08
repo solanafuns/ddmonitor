@@ -25,7 +25,7 @@ pub fn main(b64data: String) {
 
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub enum ActionInfo {
-    Hello,
+    Hello(u8, u8),
     None,
 }
 
@@ -33,7 +33,7 @@ impl ActionInfo {
     pub fn wrapper(self: &ActionInfo) -> Vec<u8> {
         info!("wrapper action : {:?}", self);
         let mut v = self.try_to_vec().unwrap();
-        let mut x = borsh::BorshSerialize::try_to_vec(&v.len()).unwrap();
+        let mut x = borsh::BorshSerialize::try_to_vec(&(v.len() as u32)).unwrap();
         x.append(&mut v);
         x
     }
@@ -57,8 +57,8 @@ impl ActionInfo {
     pub fn do_action(&self) {
         info!("you will do action : {:?}", &self);
         match &self {
-            ActionInfo::Hello => {
-                info!("hello world");
+            ActionInfo::Hello(x, y) => {
+                info!("hello world: x=  {},y = {}", x, y);
             }
             ActionInfo::None => {
                 error!("invalid action");

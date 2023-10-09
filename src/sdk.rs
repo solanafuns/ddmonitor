@@ -5,12 +5,16 @@ use {
         engine::{self, general_purpose},
         Engine as _,
     },
+    contract::instruction::InstructionData,
     log::{error, info},
     solana_account_decoder::{UiAccountData, UiAccountEncoding},
     solana_client::{pubsub_client::PubsubClient, rpc_client::RpcClient},
-    solana_program::pubkey::Pubkey,
+    solana_program::{instruction::AccountMeta, pubkey::Pubkey, system_program},
     solana_rpc_client_api::config::RpcAccountInfoConfig,
-    solana_sdk::{commitment_config::CommitmentConfig, signer::keypair::Keypair},
+    solana_sdk::{
+        commitment_config::CommitmentConfig, instruction::Instruction, signer::keypair::Keypair,
+        transaction::Transaction,
+    },
     std::io::Result,
     std::{thread, time},
 };
@@ -120,6 +124,51 @@ pub fn program_available(connection: &RpcClient, program_id: &Pubkey) -> bool {
         Err(e) => {
             error!("get program info error : {:?}", e);
             false
+        }
+    }
+}
+
+pub fn create_instruction(
+    payer_pub: Pubkey,
+    queue_pub: Pubkey,
+    program_id: String,
+    name: String,
+    data: Vec<u8>,
+) -> Instruction {
+    info!(
+        "you will push message : {:?} to : {}, queue account : {}",
+        data,
+        name,
+        queue_pub.to_string()
+    );
+    let accounts = vec![
+        AccountMeta::new(payer_pub, true),
+        AccountMeta::new(queue_pub, false),
+        AccountMeta::new_readonly(system_program::ID, false),
+    ];
+    Instruction::new_with_borsh(
+        runtime::program_account(program_id),
+        &InstructionData::PushMessage { name, data },
+        accounts,
+    )
+}
+
+pub fn send_instruction(
+    connection: &RpcClient,
+    payer: &Pubkey,
+    singers: &Vec<&Keypair>,
+    instruction: Instruction,
+) {
+    let blockhash = connection.get_latest_blockhash().unwrap();
+    let transaction =
+        Transaction::new_signed_with_payer(&[instruction], Some(&payer), singers, blockhash);
+
+    match connection.send_and_confirm_transaction(&transaction) {
+        Ok(tx) => {
+            info!("send message tx : {:?}", tx);
+        }
+        Err(e) => {
+            error!("send message error : {:?}", e);
         }
     }
 }

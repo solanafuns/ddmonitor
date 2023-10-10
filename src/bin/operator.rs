@@ -98,5 +98,27 @@ async fn main() -> std::io::Result<()> {
         ),
     );
 
+    loop {
+        info!("you will write these lines to this queue: -> {}", args.name);
+        let mut line = String::new();
+        std::io::stdin().read_line(&mut line).unwrap();
+        if line.trim() == "exit" {
+            break;
+        } else {
+            sdk::send_instruction(
+                &connection,
+                &pub_key,
+                &vec![&pair],
+                sdk::create_instruction(
+                    pub_key.clone(),
+                    queue_pub.clone(),
+                    args.program.clone(),
+                    args.name.clone(),
+                    handlers::ActionInfo::Raw(line).wrapper(),
+                ),
+            );
+        }
+    }
+
     Ok(())
 }

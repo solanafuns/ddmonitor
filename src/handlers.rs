@@ -26,6 +26,7 @@ pub fn main(b64data: String) {
 
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub enum ActionInfo {
+    Raw(String),
     ActionSample(u8, u8),
     None,
 }
@@ -60,6 +61,9 @@ impl ActionInfo {
         match &self {
             ActionInfo::ActionSample(x, y) => {
                 info!("this is example action ! x =  {} , y = {}", x, y);
+            }
+            ActionInfo::Raw(msg) => {
+                info!("this is raw action ! msg =  {} ", msg);
             }
             ActionInfo::None => {
                 error!("invalid action");

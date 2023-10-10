@@ -47,7 +47,9 @@ pub fn process_instruction(
                     user_pub,
                     allow,
                 } => {
-                    return process::do_add_user_pub(accounts, &name, &user_pub, allow, program_id);
+                    return process::do_operate_user_pub(
+                        accounts, &name, &user_pub, allow, program_id,
+                    );
                 }
             }
         }

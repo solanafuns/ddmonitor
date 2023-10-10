@@ -10,6 +10,7 @@ use {
         system_instruction,
         sysvar::{rent::Rent, Sysvar},
     },
+    std::str::FromStr,
 };
 
 pub fn do_create_queue(
@@ -130,12 +131,52 @@ pub fn do_push_message(
     Ok(())
 }
 
-pub fn do_add_user_pub(
-    _accounts: &[AccountInfo],
-    _seed_str: &str,
-    _user_pub: &str,
-    _allow: bool,
-    _program_id: &Pubkey,
+pub fn do_operate_user_pub(
+    accounts: &[AccountInfo],
+    seed_str: &str,
+    user_pub: &str,
+    allow: bool,
+    program_id: &Pubkey,
 ) -> ProgramResult {
+    msg!(
+        "You will push one message to Queue account with name : {}",
+        seed_str
+    );
+    let account_info_iter = &mut accounts.iter();
+    let payer = next_account_info(account_info_iter)?;
+    let queue_account: &AccountInfo<'_> = next_account_info(account_info_iter)?;
+    let system_account: &AccountInfo<'_> = next_account_info(account_info_iter)?;
+
+    let (pda, bump_seed) = Pubkey::find_program_address(&[seed_str.as_bytes()], program_id);
+
+    msg!(
+        "from client account info: system_account: {:?} , pda: {:?},bump_seed : {} ",
+        system_account,
+        pda,
+        bump_seed
+    );
+
+    assert!(
+        payer.is_signer
+            && payer.is_writable
+            && queue_account.is_writable
+            && queue_account.owner == program_id,
+        "users invalid!"
+    );
+
+    if pda != *queue_account.key {
+        msg!("Queue account does not have the correct pda");
+        return Err(solana_program::program_error::ProgramError::InvalidSeeds);
+    }
+
+    let mut user_queue = models::Queue::try_from_slice(&queue_account.data.borrow())?;
+    assert!(
+        user_queue.creator == *payer.key,
+        "only creator can operate allow pub"
+    );
+
+    let user_pub = Pubkey::from_str(user_pub).unwrap();
+    user_queue.operate_push_pub(&user_pub, allow);
+
     Ok(())
 }

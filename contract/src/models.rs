@@ -36,11 +36,18 @@ impl Queue {
         false
     }
 
-    pub fn add_push_pub(&mut self, user: &Pubkey) {
+    pub fn operate_push_pub(&mut self, user_pub: &Pubkey, allow: bool) {
         for i in 0..self.allow.len() {
-            if self.allow[i] == Pubkey::default() {
-                self.allow[i] = user.clone();
-                break;
+            if allow {
+                if self.allow[i] == Pubkey::default() {
+                    self.allow[i] = user_pub.clone();
+                    break;
+                }
+            } else {
+                if self.allow[i] == user_pub.clone() {
+                    self.allow[i] = Pubkey::default();
+                    break;
+                }
             }
         }
         self.last_change = clock::Clock::get().unwrap().unix_timestamp;

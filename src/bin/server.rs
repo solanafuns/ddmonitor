@@ -1,6 +1,6 @@
 use {
     clap::Parser,
-    contract::{instruction::InstructionData, models},
+    contract::instruction::InstructionData,
     ddmonitor::{handlers, runtime, sdk},
     env_logger::Env,
     log::{error, info},
@@ -74,13 +74,6 @@ async fn main() -> std::io::Result<()> {
     };
 
     if !queue_avaliable {
-        let queue_size = models::Queue::queue_size(DATA_SIZE, ALLOW_COUNT);
-        let lamports = connection
-            .get_minimum_balance_for_rent_exemption(queue_size)
-            .unwrap();
-
-        info!("queue pda need sol: {}", lamports);
-
         let accounts = vec![
             AccountMeta::new(pub_key.clone(), true),
             AccountMeta::new(queue_pub.clone(), false),

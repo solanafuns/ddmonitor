@@ -1,3 +1,5 @@
+use ddmonitor::ddmonitor_init;
+
 use {
     clap::Parser,
     contract::instruction::InstructionData,
@@ -24,7 +26,7 @@ struct Args {
     network: String,
 
     /// Solana program address
-    #[arg(short, long, default_value_t = String::from("HZRahcg3oLXw4GScUN7bzCfHWx33G6SBrg6G1vVL1qEm"))]
+    #[arg(short, long, default_value_t = String::from(runtime::DEFAULT_PROGRAM))]
     program: String,
 }
 
@@ -34,6 +36,7 @@ const ALLOW_COUNT: u8 = 3;
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
+    ddmonitor_init!();
     runtime::init_app();
     let args = Args::parse();
     let network = sdk::Network::from_string(&args.network);

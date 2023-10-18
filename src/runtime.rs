@@ -6,6 +6,8 @@ use {
     std::{env, fs, path, str::FromStr},
 };
 
+pub const DEFAULT_PROGRAM: &str = "CkJ4NC4KCQfoXvyYj9Xxs4LkGDi34zNzE1e2EEeq1h9x";
+
 pub const LAMPORTS_PER_SOL: u64 = u64::pow(10, 9);
 
 pub fn get_base_dir() -> String {

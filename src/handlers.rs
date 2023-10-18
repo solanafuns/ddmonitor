@@ -28,6 +28,7 @@ pub fn main(b64data: String) {
 pub enum ActionInfo {
     Raw(String),
     ActionSample(u8, u8),
+    UserMessage(String, String),
     None,
 }
 
@@ -64,6 +65,9 @@ impl ActionInfo {
             }
             ActionInfo::Raw(msg) => {
                 info!("this is raw action ! msg =  {} ", msg);
+            }
+            ActionInfo::UserMessage(user, msg) => {
+                info!("user:{} , send msg:  {}", user, msg);
             }
             ActionInfo::None => {
                 error!("invalid action");

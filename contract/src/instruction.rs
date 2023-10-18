@@ -17,3 +17,9 @@ pub enum InstructionData {
         allow: bool,
     },
 }
+
+impl InstructionData {
+    pub fn to_bytes(&self) -> Vec<u8> {
+        borsh::BorshSerialize::try_to_vec(self).unwrap()
+    }
+}

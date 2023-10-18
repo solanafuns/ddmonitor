@@ -1,3 +1,5 @@
+use ddmonitor::ddmonitor_init;
+
 use {
     clap::Parser,
     ddmonitor::{handlers, runtime, sdk},
@@ -23,13 +25,14 @@ struct Args {
     network: String,
 
     /// Solana program address
-    #[arg(short, long, default_value_t = String::from("HZRahcg3oLXw4GScUN7bzCfHWx33G6SBrg6G1vVL1qEm"))]
+    #[arg(short, long, default_value_t = String::from(runtime::DEFAULT_PROGRAM))]
     program: String,
 }
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
+    ddmonitor_init!();
     info!("ddmonitor operator start ...");
 
     let args = Args::parse();
@@ -43,7 +46,6 @@ async fn main() -> std::io::Result<()> {
 
     info!("current wallet address : {}", pub_key);
     sdk::connection_available(&connection)?;
-
     sdk::confirm_balance(&connection, &network, &pub_key, 5);
 
     if !sdk::program_available(&connection, &program_account) {

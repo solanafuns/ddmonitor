@@ -13,10 +13,9 @@ use {
     solana_rpc_client_api::config::RpcAccountInfoConfig,
     solana_sdk::{
         commitment_config::CommitmentConfig, instruction::Instruction, signer::keypair::Keypair,
-        transaction::Transaction,
+        signer::Signer, transaction::Transaction,
     },
-    std::io::Result,
-    std::{thread, time},
+    std::{io::Result, thread, time},
 };
 
 const PRIVATE_PATH: &str = "./private/private.json";
@@ -136,8 +135,8 @@ pub fn create_instruction(
     data: Vec<u8>,
 ) -> Instruction {
     info!(
-        "you will push message : {:?} to : {}, queue account : {}",
-        data,
+        "you will push message with length {} to : {}, queue account : {}",
+        data.len(),
         name,
         queue_pub.to_string()
     );
@@ -210,6 +209,29 @@ pub fn confirm_balance(
             thread::sleep(delay);
         }
     }
+}
+
+pub fn ddmonitor_init(
+    network: &str,
+    program: &str,
+) -> Result<(Network, Keypair, Pubkey, RpcClient, Pubkey)> {
+    let network: Network = Network::from_string(network);
+    info!("network is : <{:?}> ", network);
+    let pair = init_solana_wallet()?;
+    let pub_key = pair.pubkey();
+    let connection = get_rpc_client(&network);
+    info!("current wallet address : {}", &pub_key);
+    connection_available(&connection)?;
+    confirm_balance(&connection, &network, &pub_key, 5);
+    let program_account = runtime::program_account(program.to_string());
+    if !program_available(&connection, &program_account) {
+        error!("program account is not available , exit...");
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            format!("program account is not available , exit..."),
+        ));
+    }
+    Ok((network, pair, pub_key, connection, program_account))
 }
 
 #[derive(Debug)]

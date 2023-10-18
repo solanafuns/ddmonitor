@@ -1,9 +1,11 @@
-use borsh::BorshDeserialize;
-use solana_program::{
-    account_info::AccountInfo, entrypoint, entrypoint::ProgramResult, msg, pubkey::Pubkey,
+use {
+    crate::{instruction::InstructionData, process},
+    borsh::BorshDeserialize,
+    solana_program::{
+        account_info::AccountInfo, declare_id, entrypoint, entrypoint::ProgramResult, msg,
+        pubkey::Pubkey,
+    },
 };
-
-use crate::{instruction::InstructionData, process};
 
 fn dump_accounts_info(accounts: &[AccountInfo]) {
     msg!("Dump Account Info list... ");
@@ -11,6 +13,8 @@ fn dump_accounts_info(accounts: &[AccountInfo]) {
         msg!("{}: {:?}", i, account);
     }
 }
+
+declare_id!("9pW59BsNCqtQC1xucwTXYS4Qe9qz5AgSy2jajE63odQb");
 
 entrypoint!(process_instruction);
 pub fn process_instruction(

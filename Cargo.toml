@@ -1,6 +1,6 @@
 [package]
 name = "ddmonitor"
-version = "0.1.18"
+version = "0.1.20"
 edition = "2021"
 authors = ["v1xingyue <qixingyue@gmail.com>"]
 

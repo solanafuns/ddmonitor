@@ -1,3 +1,5 @@
+use solana_program::pubkey::Pubkey;
+
 use {
     crate::sdk,
     borsh::{BorshDeserialize, BorshSerialize},
@@ -28,7 +30,7 @@ pub fn main(b64data: String) {
 pub enum ActionInfo {
     Raw(String),
     ActionSample(u8, u8),
-    UserMessage(String, String),
+    UserMessage(Pubkey, String),
     None,
 }
 
@@ -67,7 +69,7 @@ impl ActionInfo {
                 info!("this is raw action ! msg =  {} ", msg);
             }
             ActionInfo::UserMessage(user, msg) => {
-                info!("user:{} , send msg:  {}", user, msg);
+                info!("user:{} , send msg:  {}", user.to_string(), msg);
             }
             ActionInfo::None => {
                 error!("invalid action");

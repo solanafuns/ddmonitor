@@ -36,7 +36,7 @@ struct Args {
     chat_start: bool,
 }
 
-const DATA_SIZE: usize = 512;
+const DATA_SIZE: usize = 1024;
 const ALLOW_COUNT: u8 = 5;
 
 #[tokio::main]
@@ -149,7 +149,7 @@ async fn main() -> std::io::Result<()> {
                 room_account.clone(),
                 args.program.clone(),
                 args.room.clone(),
-                handlers::ActionInfo::Raw("I'm in!".to_string()).wrapper(),
+                handlers::ActionInfo::UserMessage(pub_key.clone(), "I'm in!".to_string()).wrapper(),
             ),
         );
 
@@ -171,7 +171,7 @@ async fn main() -> std::io::Result<()> {
                         room_account.clone(),
                         args.program.clone(),
                         args.room.to_string(),
-                        handlers::ActionInfo::Raw(line).wrapper(),
+                        handlers::ActionInfo::UserMessage(pub_key.clone(), line).wrapper(),
                     ),
                 );
             }

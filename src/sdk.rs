@@ -42,7 +42,7 @@ pub fn init_solana_wallet() -> std::io::Result<Keypair> {
 }
 
 pub fn get_rpc_client(network: &Network) -> RpcClient {
-    RpcClient::new_with_commitment(network.get_rpc_url(), CommitmentConfig::finalized())
+    RpcClient::new_with_commitment(network.get_rpc_url(), CommitmentConfig::confirmed())
 }
 
 pub fn pda_queue_account(program_account: &Pubkey, name: &str) -> Pubkey {

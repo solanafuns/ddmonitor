@@ -34,7 +34,7 @@ struct Args {
     chat_start: bool,
 }
 
-const DATA_SIZE: usize = 1024;
+const DATA_SIZE: usize = 64;
 const ALLOW_COUNT: u8 = 5;
 
 #[tokio::main]
@@ -151,7 +151,9 @@ async fn main() -> std::io::Result<()> {
             ),
         );
 
-        thread::spawn(move || sdk::get_account_updates(&network, &room_account, handlers::main));
+        thread::spawn(move || {
+            sdk::get_account_updates(&network, &room_account, handlers::chat_main)
+        });
 
         loop {
             info!("you will write these lines to this queue: -> {}", args.room);

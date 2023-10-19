@@ -6,6 +6,22 @@ use {
     solana_program::pubkey::Pubkey,
 };
 
+pub fn chat_main(b64data: String) {
+    let buf = sdk::base64_decode(&b64data);
+    if !buf.is_err() {
+        let data = buf.unwrap();
+        let queue = models::Queue::try_from_slice(&data);
+        if !queue.is_err() {
+            let queue = queue.unwrap();
+            let utf8_message = String::from_utf8(queue.data.clone());
+            if !utf8_message.is_err() {
+                info!("message : {}", utf8_message.unwrap());
+            }
+            ActionInfo::from(queue.data).do_action();
+        }
+    }
+}
+
 pub fn main(b64data: String) {
     let buf = sdk::base64_decode(&b64data);
     if !buf.is_err() {
@@ -44,7 +60,7 @@ impl ActionInfo {
                 info!("this is raw action ! msg =  {} ", msg);
             }
             ActionInfo::UserMessage(user, msg) => {
-                info!("user:{} , send msg:  {}", user.to_string(), msg);
+                info!("🔥 user:{}  🔥 send msg:  {}", user.to_string(), msg);
             }
             ActionInfo::None => {
                 error!("invalid action");

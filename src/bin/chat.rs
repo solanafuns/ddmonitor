@@ -1,9 +1,7 @@
-use ddmonitor::ddmonitor_init;
-
 use {
     clap::Parser,
     contract::instruction::InstructionData,
-    ddmonitor::{handlers, runtime, sdk},
+    ddmonitor::{ddmonitor_init, handlers, runtime, sdk},
     env_logger::Env,
     log::{error, info},
     solana_program::{instruction::AccountMeta, system_program},
@@ -149,7 +147,7 @@ async fn main() -> std::io::Result<()> {
                 room_account.clone(),
                 args.program.clone(),
                 args.room.clone(),
-                handlers::ActionInfo::UserMessage(pub_key.clone(), "I'm in!".to_string()).wrapper(),
+                handlers::ActionInfo::UserMessage(pub_key.clone(), "I'm in!".to_string()).into(),
             ),
         );
 
@@ -171,7 +169,7 @@ async fn main() -> std::io::Result<()> {
                         room_account.clone(),
                         args.program.clone(),
                         args.room.to_string(),
-                        handlers::ActionInfo::UserMessage(pub_key.clone(), line).wrapper(),
+                        handlers::ActionInfo::UserMessage(pub_key.clone(), line).into(),
                     ),
                 );
             }

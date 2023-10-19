@@ -1,10 +1,9 @@
-use solana_program::pubkey::Pubkey;
-
 use {
     crate::sdk,
     borsh::{BorshDeserialize, BorshSerialize},
     contract::models,
     log::{error, info},
+    solana_program::pubkey::Pubkey,
 };
 
 pub fn main(b64data: String) {
@@ -21,7 +20,7 @@ pub fn main(b64data: String) {
             if !utf8_message.is_err() {
                 info!("message : {}", utf8_message.unwrap());
             }
-            ActionInfo::unwrap(&queue.data).do_action();
+            ActionInfo::from(queue.data).do_action();
         }
     }
 }
@@ -35,30 +34,6 @@ pub enum ActionInfo {
 }
 
 impl ActionInfo {
-    pub fn wrapper(self: &ActionInfo) -> Vec<u8> {
-        info!("wrapper action : {:?}", self);
-        let mut v = self.try_to_vec().unwrap();
-        let mut x = borsh::BorshSerialize::try_to_vec(&(v.len() as u32)).unwrap();
-        x.append(&mut v);
-        x
-    }
-
-    pub fn unwrap(payload: &Vec<u8>) -> Self {
-        let mut buf = payload.clone();
-        let len = u32::try_from_slice(&buf[0..4]).unwrap() as usize;
-        buf.drain(0..4);
-        if buf.len() < len {
-            error!("expect buffer too long : {}", len);
-            ActionInfo::None
-        } else {
-            let data = buf[0..len].to_vec();
-            info!("unwrap data : {:?}", data);
-            let action = ActionInfo::try_from_slice(&data).unwrap();
-            info!("unwrap action : {:?}", action);
-            action
-        }
-    }
-
     pub fn do_action(&self) {
         info!("you will do action : {:?}", &self);
         match &self {
@@ -74,6 +49,34 @@ impl ActionInfo {
             ActionInfo::None => {
                 error!("invalid action");
             }
+        }
+    }
+}
+
+impl Into<Vec<u8>> for ActionInfo {
+    fn into(self) -> Vec<u8> {
+        info!("wrapper action : {:?}", self);
+        let mut v = self.try_to_vec().unwrap();
+        let mut x = borsh::BorshSerialize::try_to_vec(&(v.len() as u32)).unwrap();
+        x.append(&mut v);
+        x
+    }
+}
+
+impl From<Vec<u8>> for ActionInfo {
+    fn from(payload: Vec<u8>) -> Self {
+        let mut buf = payload.clone();
+        let len = u32::try_from_slice(&buf[0..4]).unwrap() as usize;
+        buf.drain(0..4);
+        if buf.len() < len {
+            error!("expect buffer too long : {}", len);
+            ActionInfo::None
+        } else {
+            let data = buf[0..len].to_vec();
+            info!("unwrap data : {:?}", data);
+            let action = ActionInfo::try_from_slice(&data).unwrap();
+            info!("unwrap action : {:?}", action);
+            action
         }
     }
 }

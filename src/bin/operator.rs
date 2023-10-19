@@ -1,8 +1,6 @@
-use ddmonitor::ddmonitor_init;
-
 use {
     clap::Parser,
-    ddmonitor::{handlers, runtime, sdk},
+    ddmonitor::{ddmonitor_init, handlers, runtime, sdk},
     env_logger::Env,
     log::{error, info},
     solana_sdk::signer::Signer,
@@ -96,7 +94,7 @@ async fn main() -> std::io::Result<()> {
             queue_pub.clone(),
             args.program.clone(),
             args.name.clone(),
-            handlers::ActionInfo::ActionSample(1, 2).wrapper(),
+            handlers::ActionInfo::ActionSample(1, 2).into(),
         ),
     );
 
@@ -116,7 +114,7 @@ async fn main() -> std::io::Result<()> {
                     queue_pub.clone(),
                     args.program.clone(),
                     args.name.clone(),
-                    handlers::ActionInfo::Raw(line).wrapper(),
+                    handlers::ActionInfo::Raw(line).into(),
                 ),
             );
         }

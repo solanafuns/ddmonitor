@@ -1,9 +1,7 @@
-use ddmonitor::ddmonitor_init;
-
 use {
     clap::Parser,
     contract::instruction::InstructionData,
-    ddmonitor::{handlers, runtime, sdk},
+    ddmonitor::{ddmonitor_init, handlers, runtime, sdk},
     env_logger::Env,
     log::{error, info},
     solana_program::{instruction::AccountMeta, system_program},
